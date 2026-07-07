@@ -10,6 +10,11 @@
  * Configure once at app startup (see config.ts): the package never reads process.env.
  */
 
+/** The package version, exported for consumer logging/diagnostics. Introduced at 0.1.1 —
+ *  the M005 AC-3 upgrade rehearsal (one deliberate benign change → pinned-SHA bump → a PR
+ *  in every consumer, proving the fix-lands-everywhere path works before it is needed). */
+export const ORG_CONTRACT_VERSION = "0.1.1";
+
 // Configuration (injected — never process.env)
 export {
   configureOrgContract,
