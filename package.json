@@ -17,6 +17,78 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./standards": {
+      "types": "./src/standards.ts",
+      "default": "./src/standards.ts"
+    },
+    "./config": {
+      "types": "./src/config.ts",
+      "default": "./src/config.ts"
+    },
+    "./queryable": {
+      "types": "./src/queryable.ts",
+      "default": "./src/queryable.ts"
+    },
+    "./tx": {
+      "types": "./src/db/tx.ts",
+      "default": "./src/db/tx.ts"
+    },
+    "./pin": {
+      "types": "./src/auth/pin.ts",
+      "default": "./src/auth/pin.ts"
+    },
+    "./station-pin": {
+      "types": "./src/auth/station-pin.ts",
+      "default": "./src/auth/station-pin.ts"
+    },
+    "./station-session": {
+      "types": "./src/auth/station-session.ts",
+      "default": "./src/auth/station-session.ts"
+    },
+    "./station-token": {
+      "types": "./src/auth/station-token.ts",
+      "default": "./src/auth/station-token.ts"
+    },
+    "./station-pairing": {
+      "types": "./src/auth/station-pairing.ts",
+      "default": "./src/auth/station-pairing.ts"
+    },
+    "./station-attribution": {
+      "types": "./src/auth/station-attribution.ts",
+      "default": "./src/auth/station-attribution.ts"
+    },
+    "./person-read": {
+      "types": "./src/identity/person-read.ts",
+      "default": "./src/identity/person-read.ts"
+    },
+    "./credential-repo": {
+      "types": "./src/identity/credential-repo.ts",
+      "default": "./src/identity/credential-repo.ts"
+    },
+    "./registry": {
+      "types": "./src/registry/apps.ts",
+      "default": "./src/registry/apps.ts"
+    },
+    "./resolver": {
+      "types": "./src/contract/resolver.ts",
+      "default": "./src/contract/resolver.ts"
+    },
+    "./master-read": {
+      "types": "./src/contract/master-read.ts",
+      "default": "./src/contract/master-read.ts"
+    },
+    "./overlay": {
+      "types": "./src/masters/overlay.ts",
+      "default": "./src/masters/overlay.ts"
+    },
+    "./directory": {
+      "types": "./src/stations/directory.ts",
+      "default": "./src/stations/directory.ts"
+    },
+    "./audit-writer": {
+      "types": "./src/audit/app-writer.ts",
+      "default": "./src/audit/app-writer.ts"
     }
   },
   "main": "./src/index.ts",
