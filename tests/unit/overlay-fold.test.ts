@@ -102,7 +102,7 @@ describe("overlayCentralPicker (active-only picker contract)", () => {
       return {
         rows: ids
           .filter((id) => byId[id])
-          .map((id) => ({ id, name: byId[id].name, status: byId[id].status })),
+          .map((id) => ({ id, name: byId[id]!.name, status: byId[id]!.status })),
         rowCount: null,
       };
     },

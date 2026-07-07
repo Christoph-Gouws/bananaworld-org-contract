@@ -93,8 +93,8 @@ async function loadStationForPin(db: Queryable, stationId: string): Promise<Stat
       where id = $1`,
     [stationId],
   );
-  if (rows.length === 0) return null;
   const r = rows[0];
+  if (r === undefined) return null;
   return {
     id: r.id as string,
     autoLogoffMinutes: r.auto_logoff_minutes as number,
@@ -172,7 +172,7 @@ export async function authenticateStationPin(
 
   // Success: exactly one person. Open the session, mint the token, clear the throttle, audit login.
   if (matches.length === 1) {
-    const personId = matches[0];
+    const personId = matches[0] as string;
     const person = await findPersonById(db, personId);
     // The candidate set is active-person-only, so this is defensive (a race retiring the
     // person between the candidate read and here) — deny rather than resolve a ghost.
@@ -195,7 +195,9 @@ export async function authenticateStationPin(
          returning id::text as id`,
         [station.id, personId],
       );
-      const stationSessionId = ins.rows[0].id as string;
+      const inserted = ins.rows[0];
+      if (inserted === undefined) throw new Error("station_session insert returned no row");
+      const stationSessionId = inserted.id as string;
       // Clear the per-station throttle on a good tap-in.
       await tx.query(
         `update org.station

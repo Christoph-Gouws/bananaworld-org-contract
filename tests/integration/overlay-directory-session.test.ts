@@ -123,12 +123,12 @@ RUN("Estate Station Directory read (integration, fail-open)", () => {
     expect(all.stations).toHaveLength(3);
 
     const found = await findEstateStations(db, [
-      all.stations[0].stationId,
-      all.stations[0].stationId,
+      all.stations[0]!.stationId,
+      all.stations[0]!.stationId,
     ]);
     expect(found.available).toBe(true);
     expect(found.stations.size).toBe(1);
-    expect(found.stations.get(all.stations[0].stationId)?.ownerApp).toBe("dc");
+    expect(found.stations.get(all.stations[0]!.stationId)?.ownerApp).toBe("dc");
   });
 
   it("an absent view reports available:false — never a throw, never a block", async () => {
@@ -174,7 +174,7 @@ RUN("station-session lifecycle + attribution (integration)", () => {
     );
     const logouts = await auditRows(db, "logout");
     expect(logouts).toHaveLength(1);
-    expect(logouts[0].actor_person_id).toBe(personId);
+    expect(logouts[0]!.actor_person_id).toBe(personId);
     expect(await logoutStationSession(db, { stationSessionId: sessionId, appCode: "rms" })).toBe(
       "not_open",
     );

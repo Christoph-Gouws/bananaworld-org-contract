@@ -50,7 +50,8 @@ export async function resolveApp(db: Queryable, appCode: string): Promise<Consum
     "select app_code, name, status from org.app where app_code = $1",
     [appCode],
   );
-  return rows.length ? toApp(rows[0]) : null;
+  const row = rows[0];
+  return row ? toApp(row) : null;
 }
 
 /** Resolve one app, or throw UnknownAppError if it is not registered or not active.

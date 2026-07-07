@@ -98,7 +98,9 @@ export async function issueActivePin(
          returning id::text as id`,
         [input.personId, input.pinHash, input.pinLookup, input.actorPersonId ?? null],
       );
-      const credentialId = ins.rows[0].id as string;
+      const inserted = ins.rows[0];
+      if (inserted === undefined) throw new Error("credential insert returned no row");
+      const credentialId = inserted.id as string;
       await writeAppAudit(tx, {
         actor,
         appCode: "org",
@@ -147,8 +149,9 @@ export async function getCredentialStatus(
       limit 1`,
     [personId],
   );
-  return rows.length
-    ? { pinSet: true, setAt: (rows[0].set_at as Date) ?? null }
+  const row = rows[0];
+  return row
+    ? { pinSet: true, setAt: (row.set_at as Date) ?? null }
     : { pinSet: false, setAt: null };
 }
 
@@ -179,7 +182,8 @@ export async function issueOrResetPin(
             returning id::text as id`,
           [input.personId, input.actorPersonId ?? null],
         );
-        const supersededId = prior.rows.length ? (prior.rows[0].id as string) : null;
+        const priorRow = prior.rows[0];
+        const supersededId = priorRow ? (priorRow.id as string) : null;
 
         const ins = await tx.query(
           `insert into org.credential (person_id, kind, pin_hash, pin_lookup, active, created_by)
@@ -187,7 +191,9 @@ export async function issueOrResetPin(
            returning id::text as id`,
           [input.personId, input.pinHash, input.pinLookup, input.actorPersonId ?? null],
         );
-        const credentialId = ins.rows[0].id as string;
+        const inserted = ins.rows[0];
+        if (inserted === undefined) throw new Error("credential insert returned no row");
+        const credentialId = inserted.id as string;
 
         await writeAppAudit(tx, {
           actor,

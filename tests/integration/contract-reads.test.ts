@@ -113,7 +113,7 @@ RUN("readMaster — central source (integration)", () => {
       filter: { status: "active" },
     });
     expect(active.items).toHaveLength(1);
-    expect(active.items[0].slug).toBe("alpha");
+    expect(active.items[0]!.slug).toBe("alpha");
   });
 
   it("shapes the asset steward_app → stewardApp and DROPS the null steward key (API-RES-009)", async () => {
@@ -148,10 +148,10 @@ RUN("readMaster — central source (integration)", () => {
     );
     const denials = await auditRows(db, "master_read");
     expect(denials).toHaveLength(1);
-    expect(denials[0].actor_person_id).toBe(SYSTEM_ACTOR_ID);
-    expect(denials[0].app_code).toBe("crm");
-    expect(denials[0].outcome).toBe("denied");
-    expect(denials[0].deny_layer).toBe("repository");
-    expect((denials[0].after as { reason: string }).reason).toBe("forbidden_scope");
+    expect(denials[0]!.actor_person_id).toBe(SYSTEM_ACTOR_ID);
+    expect(denials[0]!.app_code).toBe("crm");
+    expect(denials[0]!.outcome).toBe("denied");
+    expect(denials[0]!.deny_layer).toBe("repository");
+    expect((denials[0]!.after as { reason: string }).reason).toBe("forbidden_scope");
   });
 });

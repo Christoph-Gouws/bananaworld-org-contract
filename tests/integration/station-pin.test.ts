@@ -91,9 +91,9 @@ RUN("station-PIN authentication (integration)", () => {
 
     const logins = await auditRows(db, "login");
     expect(logins).toHaveLength(1);
-    expect(logins[0].actor_person_id).toBe(personId);
-    expect(logins[0].app_code).toBe("rms");
-    expect(logins[0].outcome).toBe("success");
+    expect(logins[0]!.actor_person_id).toBe(personId);
+    expect(logins[0]!.app_code).toBe("rms");
+    expect(logins[0]!.outcome).toBe("success");
   });
 
   it("F8: a fresh tap-in closes the prior occupant's session with one auto_logoff audit row", async () => {
@@ -108,7 +108,7 @@ RUN("station-PIN authentication (integration)", () => {
     expect(prior.rows[0].ended_at).not.toBeNull();
     const autoLogoffs = await auditRows(db, "auto_logoff");
     expect(autoLogoffs).toHaveLength(1);
-    expect(autoLogoffs[0].actor_person_id).toBe(personId);
+    expect(autoLogoffs[0]!.actor_person_id).toBe(personId);
   });
 
   it("a NULL-lookup credential (pre-M002, not yet reissued) still authenticates — the transition fail-safe", async () => {
@@ -126,7 +126,7 @@ RUN("station-PIN authentication (integration)", () => {
     expect(station.rows[0].failed_pin_attempts).toBe(1);
     const failures = await auditRows(db, "pin_failure");
     expect(failures).toHaveLength(1);
-    expect((failures[0].after as { reason: string }).reason).toBe("pin_mismatch");
+    expect((failures[0]!.after as { reason: string }).reason).toBe("pin_mismatch");
   });
 
   it("locks after THRESHOLD failures, denies while locked WITHOUT checking the PIN, self-expires", async () => {
@@ -180,7 +180,7 @@ RUN("station-PIN authentication (integration)", () => {
     ]);
     expect(station.rows[0].failed_pin_attempts).toBe(0); // a collision never advances the guess counter
     const failures = await auditRows(db, "pin_failure");
-    expect((failures[0].after as { reason: string }).reason).toBe("pin_collision");
+    expect((failures[0]!.after as { reason: string }).reason).toBe("pin_collision");
   });
 
   it("an unknown station denies generically and audits unknown_station", async () => {
@@ -191,7 +191,7 @@ RUN("station-PIN authentication (integration)", () => {
     });
     expect(result).toEqual({ outcome: "denied" });
     const failures = await auditRows(db, "pin_failure");
-    expect((failures[0].after as { reason: string }).reason).toBe("unknown_station");
+    expect((failures[0]!.after as { reason: string }).reason).toBe("unknown_station");
   });
 
   it("mintToken:false opens the session with token null (identity-only consumers)", async () => {

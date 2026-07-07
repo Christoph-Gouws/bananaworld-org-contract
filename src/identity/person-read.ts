@@ -42,7 +42,8 @@ function toPerson(row: Record<string, unknown>): CentralPerson {
 export async function findPersonById(db: Queryable, id: string): Promise<CentralPerson | null> {
   if (!UUID_RE.test(id)) return null;
   const { rows } = await db.query(`${SELECT} where id = $1`, [id]);
-  return rows.length ? toPerson(rows[0]) : null;
+  const row = rows[0];
+  return row ? toPerson(row) : null;
 }
 
 /** Resolve by email login (case-folded — emails are stored lowercase, DB-CON-006). */
@@ -51,7 +52,8 @@ export async function findPersonByEmail(
   email: string,
 ): Promise<CentralPerson | null> {
   const { rows } = await db.query(`${SELECT} where email = $1`, [email.toLowerCase()]);
-  return rows.length ? toPerson(rows[0]) : null;
+  const row = rows[0];
+  return row ? toPerson(row) : null;
 }
 
 /** Resolve by the optional non-email login handle. */
@@ -60,7 +62,8 @@ export async function findPersonByLogin(
   login: string,
 ): Promise<CentralPerson | null> {
   const { rows } = await db.query(`${SELECT} where login = $1`, [login]);
-  return rows.length ? toPerson(rows[0]) : null;
+  const row = rows[0];
+  return row ? toPerson(row) : null;
 }
 
 /** Resolve by email, but only an ACTIVE person — used by a console/app sign-in so a
