@@ -54,7 +54,13 @@ interface MasterConfig {
 
 const MASTERS: Record<MasterName, MasterConfig> = {
   legal_entity: {
-    select: "t.id::text as id, t.name, t.slug, t.status",
+    // v0.2.1 (Org Admin EPIC-008-M006): + the re-homed business fields — additive on the
+    // frozen surface (org-admin migration #21 extends the boundary view in lockstep). The
+    // v0.2.0 release note claimed this select change but shipped without it — the org-admin
+    // stub/central parity gate caught the divergence; fixed here.
+    select:
+      "t.id::text as id, t.name, t.slug, t.status, t.functional_currency, " +
+      "t.default_language, t.registration_no, t.tax_no",
     from: "org.v_master_legal_entity t",
     filters: { status: "status", legal_entity_id: "id" },
   },
