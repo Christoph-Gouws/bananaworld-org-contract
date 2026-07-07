@@ -46,7 +46,9 @@ export async function resetOrgSchema(db: Client): Promise<void> {
       email text unique,
       login text unique,
       status text not null default 'active',
-      home_legal_entity_id uuid not null references org.legal_entity(id)
+      home_legal_entity_id uuid not null references org.legal_entity(id),
+      -- v0.3.1 (EPIC-008-M006): the ONE estate browser login (org-admin migration #22)
+      auth_user_id uuid unique
     );
 
     create table org.credential (

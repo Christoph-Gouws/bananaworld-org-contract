@@ -15,18 +15,23 @@ import type { Queryable } from "../queryable";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** A central person's canonical identity (no permissions — OD-003). */
+/** A central person's canonical identity (no permissions — OD-003). `authUserId` (v0.3.1,
+ *  EPIC-008-M006): the person's ONE estate browser login — the shared Supabase Auth user id
+ *  (org.person.auth_user_id, org-admin migration #22). One person, one login (OD-004); the
+ *  mapping previously lived only in DC's public.app_user (retired at M006). Null for a
+ *  person with no browser login (e.g. PIN-only floor staff). */
 export interface CentralPerson {
   personId: string;
   fullName: string;
   legalEntityId: string;
   status: string;
   email: string | null;
+  authUserId: string | null;
 }
 
 const SELECT =
   "select id::text as id, full_name, home_legal_entity_id::text as legal_entity_id, " +
-  "status, email from org.person";
+  "status, email, auth_user_id::text as auth_user_id from org.person";
 
 function toPerson(row: Record<string, unknown>): CentralPerson {
   return {
@@ -35,6 +40,7 @@ function toPerson(row: Record<string, unknown>): CentralPerson {
     legalEntityId: row.legal_entity_id as string,
     status: row.status as string,
     email: (row.email as string | null) ?? null,
+    authUserId: (row.auth_user_id as string | null) ?? null,
   };
 }
 
@@ -74,4 +80,35 @@ export async function findActivePersonByEmail(
 ): Promise<CentralPerson | null> {
   const person = await findPersonByEmail(db, email);
   return person && person.status === "active" ? person : null;
+}
+
+/** Resolve by the estate browser login (the shared Supabase Auth user id) — v0.3.1,
+ *  EPIC-008-M006. The rename-safe, email-independent resolution every app uses once DC's
+ *  public.app_user mapping is retired. A malformed uuid is a clean null. */
+export async function findPersonByAuthId(
+  db: Queryable,
+  authUserId: string,
+): Promise<CentralPerson | null> {
+  if (!UUID_RE.test(authUserId)) return null;
+  const { rows } = await db.query(`${SELECT} where auth_user_id = $1`, [authUserId]);
+  const row = rows[0];
+  return row ? toPerson(row) : null;
+}
+
+/** Batch-resolve people by auth user id — one query serving list-display joins
+ *  (assignee/owner names) that used to LEFT JOIN public.app_user. Malformed ids are
+ *  skipped; the Map holds only resolved ids. */
+export async function findPersonsByAuthIds(
+  db: Queryable,
+  authUserIds: readonly string[],
+): Promise<Map<string, CentralPerson>> {
+  const valid = [...new Set(authUserIds.filter((id) => UUID_RE.test(id)))];
+  const out = new Map<string, CentralPerson>();
+  if (valid.length === 0) return out;
+  const { rows } = await db.query(`${SELECT} where auth_user_id = any($1::uuid[])`, [valid]);
+  for (const row of rows) {
+    const person = toPerson(row);
+    if (person.authUserId) out.set(person.authUserId, person);
+  }
+  return out;
 }
