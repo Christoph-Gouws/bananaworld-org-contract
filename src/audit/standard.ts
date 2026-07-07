@@ -41,10 +41,9 @@ export const AUDIT_ACTIONS = [
   "logout",
   "auto_logoff",
   "pin_failure",
-  // strangler cutover steps (Epics 5-7, BPW-MIG-001..005)
-  "cutover_switch_reads",
-  "cutover_move_admin",
-  "cutover_retire_ownership",
+  // (the strangler cutover actions — cutover_switch_reads/_move_admin/_retire_ownership —
+  // were RETIRED at Org Admin EPIC-008-M006: never emitted by any writer, 0 rows estate-wide;
+  // the DB CHECK is recreated without them in org-admin migration #21)
   // audit viewer reads (Epic 4)
   "audit_log_read",
   "audit_log_export",

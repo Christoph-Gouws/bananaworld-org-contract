@@ -11,9 +11,12 @@
  */
 
 /** The package version, exported for consumer logging/diagnostics. Introduced at 0.1.1 —
- *  the M005 AC-3 upgrade rehearsal (one deliberate benign change → pinned-SHA bump → a PR
- *  in every consumer, proving the fix-lands-everywhere path works before it is needed). */
-export const ORG_CONTRACT_VERSION = "0.1.1";
+ *  the M005 AC-3 upgrade rehearsal. 0.2.0 = the Org Admin EPIC-008-M006 chassis release:
+ *  the never-emitted `cutover_*` audit actions are RETIRED, and the legal-entity read
+ *  surface gains the re-homed business fields (functional_currency, default_language,
+ *  registration_no, tax_no — additive; org-admin migration #21 extends the boundary view
+ *  in lockstep). */
+export const ORG_CONTRACT_VERSION = "0.2.0";
 
 // Configuration (injected — never process.env)
 export {

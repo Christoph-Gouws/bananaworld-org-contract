@@ -27,10 +27,40 @@ const SITE_FARM = "0000stub-0000-4000-8000-0000000si0002";
 const ASSET_DC_TRUCK = "0000stub-0000-4000-8000-0000000as0001";
 
 export const STUB_MASTERS: Record<MasterName, readonly MasterRow[]> = {
+  // v0.2.0 (Org Admin EPIC-008-M006): legal_entity carries the re-homed business fields
+  // (functional_currency, default_language, registration_no, tax_no) — central master data
+  // since org-admin migration #21 (DECISION-GATE-014 choice 2).
   legal_entity: [
-    { id: LE_DC, name: "Stub DC Operator", slug: "stub-dc-operator", status: "active" },
-    { id: LE_FARM, name: "Stub Green Farms", slug: "stub-green-farms", status: "active" },
-    { id: LE_TRANSPORT, name: "Stub Transport Co", slug: "stub-transport", status: "inactive" },
+    {
+      id: LE_DC,
+      name: "Stub DC Operator",
+      slug: "stub-dc-operator",
+      status: "active",
+      functional_currency: "ZAR",
+      default_language: "en",
+      registration_no: null,
+      tax_no: null,
+    },
+    {
+      id: LE_FARM,
+      name: "Stub Green Farms",
+      slug: "stub-green-farms",
+      status: "active",
+      functional_currency: "ZAR",
+      default_language: null,
+      registration_no: null,
+      tax_no: null,
+    },
+    {
+      id: LE_TRANSPORT,
+      name: "Stub Transport Co",
+      slug: "stub-transport",
+      status: "inactive",
+      functional_currency: "ZAR",
+      default_language: null,
+      registration_no: null,
+      tax_no: null,
+    },
   ],
   entity_role: [
     {
