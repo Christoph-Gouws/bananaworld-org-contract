@@ -123,6 +123,8 @@ export async function resetOrgSchema(db: Client): Promise<void> {
     );
     create table org.v_master_farm (
       id uuid primary key default gen_random_uuid(),
+      -- v0.3.0 (EPIC-008-M006): farm is LISTABLE via readMaster — carries the owner link
+      legal_entity_id uuid,
       code text not null, name text not null, status text not null default 'active'
     );
     create table org.v_master_site (

@@ -94,6 +94,15 @@ const MASTERS: Record<MasterName, MasterConfig> = {
     from: "org.v_master_station t",
     filters: { station_kind: "station_kind", site_id: "site_id", asset_id: "asset_id" },
   },
+  farm: {
+    // v0.3.0 (EPIC-008-M006): farms became LISTABLE — post-teardown DC/RMS pickers read
+    // central farms directly (a farm is a site owned by a legal entity, EPIC-008-M001;
+    // v_master_farm.id IS the org.site id).
+    select:
+      "t.id::text as id, t.legal_entity_id::text as legal_entity_id, t.code, t.name, t.status",
+    from: "org.v_master_farm t",
+    filters: { legal_entity_id: "legal_entity_id", status: "status", code: "code" },
+  },
 };
 
 function decodeCursor(cursor: string | undefined): number {

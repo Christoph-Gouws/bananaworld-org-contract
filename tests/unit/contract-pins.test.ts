@@ -23,12 +23,12 @@ describe("consuming-app registry pin", () => {
   });
 });
 
-describe("least-privilege scope matrix pin (owner-approved, M2.3 gate)", () => {
+describe("least-privilege scope matrix pin (owner-approved, M2.3 gate; farm added at v0.3.0 — EPIC-008-M006, DECISION-GATE-014)", () => {
   it("is exactly the approved matrix", () => {
     expect(MASTER_READ_SCOPE).toEqual({
-      dc: ["legal_entity", "entity_role", "site", "asset", "station"],
+      dc: ["legal_entity", "entity_role", "site", "asset", "station", "farm"],
       crm: ["legal_entity", "entity_role", "site"],
-      rms: ["legal_entity", "site", "asset", "station"],
+      rms: ["legal_entity", "site", "asset", "station", "farm"],
     });
   });
   it("covers every registered app", () => {

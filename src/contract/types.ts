@@ -48,8 +48,10 @@ export type IdentityResolveResult =
 
 // --- Master read (API-MASTER-001) ------------------------------------------------
 
-/** The masters a consumer may read (API-REQ-005). */
-export type MasterName = "legal_entity" | "entity_role" | "site" | "asset" | "station";
+/** The masters a consumer may read (API-REQ-005). `farm` joined at v0.3.0
+ *  (EPIC-008-M006): post-teardown DC/RMS LIST central farms directly — previously farms
+ *  were only an overlay kind onto local `public.farm` rows (now dropped). */
+export type MasterName = "legal_entity" | "entity_role" | "site" | "asset" | "station" | "farm";
 
 export interface MasterReadRequest {
   master: MasterName;
