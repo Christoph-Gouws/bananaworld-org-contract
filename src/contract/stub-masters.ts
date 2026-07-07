@@ -80,6 +80,17 @@ export const STUB_MASTERS: Record<MasterName, readonly MasterRow[]> = {
     { id: SITE_DC, legal_entity_id: LE_DC, site_type: "dc", name: "Stub Central DC" },
     { id: SITE_FARM, legal_entity_id: LE_FARM, site_type: "farm", name: "Stub Farm North" },
   ],
+  // v0.3.0: the LISTABLE farm master (v_master_farm — a farm site + its code; the id IS
+  // the org.site id, so the farm stub mirrors SITE_FARM).
+  farm: [
+    {
+      id: SITE_FARM,
+      legal_entity_id: LE_FARM,
+      code: "FARM-N",
+      name: "Stub Farm North",
+      status: "active",
+    },
+  ],
   asset: [
     // App-stewarded (a DC delivery truck) → carries stewardApp (API-RES-009).
     {
