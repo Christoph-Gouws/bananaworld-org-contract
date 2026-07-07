@@ -113,7 +113,9 @@ export async function resetOrgSchema(db: Client): Promise<void> {
     -- SELECTs; the real views are proven by org-admin's own migration-backed suite).
     create table org.v_master_legal_entity (
       id uuid primary key default gen_random_uuid(),
-      name text not null, slug text not null, status text not null default 'active'
+      name text not null, slug text not null, status text not null default 'active',
+      -- v0.2.0 (EPIC-008-M006): the re-homed business fields (org-admin migration #21)
+      functional_currency text, default_language text, registration_no text, tax_no text
     );
     create table org.v_master_entity_role (
       id uuid primary key default gen_random_uuid(),
