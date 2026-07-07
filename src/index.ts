@@ -16,7 +16,7 @@
  *  surface gains the re-homed business fields (functional_currency, default_language,
  *  registration_no, tax_no — additive; org-admin migration #21 extends the boundary view
  *  in lockstep). */
-export const ORG_CONTRACT_VERSION = "0.2.0";
+export const ORG_CONTRACT_VERSION = "0.2.1";
 
 // Configuration (injected — never process.env)
 export {

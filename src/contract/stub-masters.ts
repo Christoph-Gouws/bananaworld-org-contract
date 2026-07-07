@@ -62,13 +62,14 @@ export const STUB_MASTERS: Record<MasterName, readonly MasterRow[]> = {
       tax_no: null,
     },
   ],
+  // ('farm' left the entity-role value set at EPIC-008-M006 — a farm is a SITE; the
+  // farm-operator company holds no role, exactly like production data.)
   entity_role: [
     {
       id: "0000stub-0000-4000-8000-0000000er0001",
       legal_entity_id: LE_DC,
       role_type: "dc_operator",
     },
-    { id: "0000stub-0000-4000-8000-0000000er0002", legal_entity_id: LE_FARM, role_type: "farm" },
     {
       id: "0000stub-0000-4000-8000-0000000er0003",
       legal_entity_id: LE_TRANSPORT,
