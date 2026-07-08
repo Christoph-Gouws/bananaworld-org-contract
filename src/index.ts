@@ -15,8 +15,11 @@
  *  the never-emitted `cutover_*` audit actions are RETIRED, and the legal-entity read
  *  surface gains the re-homed business fields (functional_currency, default_language,
  *  registration_no, tax_no — additive; org-admin migration #21 extends the boundary view
- *  in lockstep). */
-export const ORG_CONTRACT_VERSION = "0.3.1";
+ *  in lockstep). 0.4.0 = the Org Admin EPIC-008-M007 release: `listPersons` — the first
+ *  list-MANY central-person read (search-first + capped + active-only), backing the
+ *  "add a person to an app" directory picker in DC + CRM. Additive; no shape change to any
+ *  frozen API. */
+export const ORG_CONTRACT_VERSION = "0.4.0";
 
 // Configuration (injected — never process.env)
 export {
@@ -60,13 +63,20 @@ export {
   type ConsumingApp,
 } from "./registry/apps";
 
-// Central identity reads (org.person)
+// Central identity reads (org.person). The auth-id reads (findPersonByAuthId,
+// findPersonsByAuthIds) remain available via the "./person-read" subpath, as before.
 export {
   findPersonById,
   findPersonByEmail,
   findPersonByLogin,
   findActivePersonByEmail,
+  listPersons,
+  LIST_PERSONS_MIN_QUERY,
+  LIST_PERSONS_DEFAULT_LIMIT,
+  LIST_PERSONS_MAX_LIMIT,
   type CentralPerson,
+  type PersonSummary,
+  type ListPersonsOptions,
 } from "./identity/person-read";
 
 // Credential store (org.credential) — the login half + the issuance half
