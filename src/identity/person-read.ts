@@ -112,3 +112,84 @@ export async function findPersonsByAuthIds(
   }
   return out;
 }
+
+// ---------------------------------------------------------------------------
+// The central-directory PICKER read (EPIC-008-M007 Workstream D — the first list-MANY
+// person read; every read above is resolve-ONE). It backs the "add a person to an app"
+// directory pick in DC + CRM. Deliberately search-first, capped and active-only.
+// ---------------------------------------------------------------------------
+
+/** Fewer than this many non-space chars → an empty result (never list-all). */
+export const LIST_PERSONS_MIN_QUERY = 2;
+/** Default result cap when the caller does not specify one. */
+export const LIST_PERSONS_DEFAULT_LIMIT = 20;
+/** Hard ceiling on results — an app admin can never page the whole estate from a picker. */
+export const LIST_PERSONS_MAX_LIMIT = 50;
+
+/** A lightweight person summary for the directory picker. Identity ONLY (OD-003) — just
+ *  enough to display a candidate (name + email + status) and select them for provisioning;
+ *  the app reads full identity by id once picked. */
+export interface PersonSummary {
+  personId: string;
+  fullName: string;
+  email: string | null;
+  status: string;
+}
+
+export interface ListPersonsOptions {
+  /** Required search term, matched case-insensitively as a substring of full name OR email.
+   *  A term shorter than {@link LIST_PERSONS_MIN_QUERY} (after trim) yields an empty result:
+   *  the directory is NEVER dumped in full. This is both the provisioning-filter (search-
+   *  first) and a least-privilege control — a picker cannot enumerate the whole estate
+   *  directory (EPIC-008-M007 §D / Workstream B identity-concentration audit). */
+  query: string;
+  /** Result cap; defaults to {@link LIST_PERSONS_DEFAULT_LIMIT}, clamped to
+   *  [1, {@link LIST_PERSONS_MAX_LIMIT}]. */
+  limit?: number;
+  /** Central person ids ALREADY provisioned in the calling app — excluded so the picker
+   *  only offers people not yet in this app. Each app computes this from its OWN grant/
+   *  membership table (there is no central app-membership concept); the exclusion happens
+   *  in SQL so the cap returns a full page of eligible candidates. Malformed ids are ignored. */
+  excludePersonIds?: readonly string[];
+}
+
+// Escape LIKE metacharacters so a user's raw search term is matched literally.
+function escapeLike(term: string): string {
+  return term.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
+
+/** Search the central people directory for the app "add a person" picker. Returns at most
+ *  `limit` ACTIVE people whose name or email contains the (case-insensitive) search term,
+ *  ordered by name, excluding anyone already in the calling app. Returns [] for a too-short
+ *  query — search-first, never list-all (EPIC-008-M007 §D). */
+export async function listPersons(
+  db: Queryable,
+  opts: ListPersonsOptions,
+): Promise<PersonSummary[]> {
+  const q = opts.query.trim();
+  if (q.length < LIST_PERSONS_MIN_QUERY) return [];
+
+  const limit = Math.min(
+    Math.max(Math.trunc(opts.limit ?? LIST_PERSONS_DEFAULT_LIMIT), 1),
+    LIST_PERSONS_MAX_LIMIT,
+  );
+  const pattern = `%${escapeLike(q.toLowerCase())}%`;
+  const exclude = [...new Set((opts.excludePersonIds ?? []).filter((id) => UUID_RE.test(id)))];
+
+  const { rows } = await db.query(
+    `select id::text as id, full_name, status, email
+       from org.person
+      where status = 'active'
+        and (lower(full_name) like $1 escape '\\' or lower(email) like $1 escape '\\')
+        and ($2::uuid[] is null or id <> all($2::uuid[]))
+      order by full_name asc, id asc
+      limit $3`,
+    [pattern, exclude.length ? exclude : null, limit],
+  );
+  return rows.map((row) => ({
+    personId: row.id as string,
+    fullName: row.full_name as string,
+    email: (row.email as string | null) ?? null,
+    status: row.status as string,
+  }));
+}
