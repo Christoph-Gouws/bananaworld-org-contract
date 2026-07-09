@@ -74,6 +74,37 @@ describe("readMaster (stub source, API-STUB-001)", () => {
     expect(trucksAtDc.items.length).toBeGreaterThan(0);
   });
 
+  it("reads a single row by its own id (v0.4.1 — the detail-view read)", async () => {
+    // legal_entity: `id` selects exactly the one entity (the uniform by-own-id key).
+    const all = await readMaster(NO_DB, { master: "legal_entity", appCode: "dc" });
+    const target = all.items[1]!;
+    const one = await readMaster(NO_DB, {
+      master: "legal_entity",
+      appCode: "dc",
+      filter: { id: String(target.id) },
+    });
+    expect(one.items).toHaveLength(1);
+    expect(one.items[0]!.id).toBe(target.id);
+
+    // farm: `id` filters by the farm's OWN id, distinct from `legal_entity_id` (the owner).
+    const farms = await readMaster(NO_DB, { master: "farm", appCode: "dc" });
+    const farm = farms.items[0]!;
+    const oneFarm = await readMaster(NO_DB, {
+      master: "farm",
+      appCode: "dc",
+      filter: { id: String(farm.id) },
+    });
+    expect(oneFarm.items).toHaveLength(1);
+    expect(oneFarm.items[0]!.id).toBe(farm.id);
+    // an unknown id yields no rows (never throws)
+    const none = await readMaster(NO_DB, {
+      master: "farm",
+      appCode: "dc",
+      filter: { id: "0000stub-0000-4000-8000-00000000none" },
+    });
+    expect(none.items).toHaveLength(0);
+  });
+
   it("ignores an unknown filter key (allow-list, never interpolated)", async () => {
     const all = await readMaster(NO_DB, { master: "site", appCode: "dc" });
     const filtered = await readMaster(NO_DB, {
