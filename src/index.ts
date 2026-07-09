@@ -17,9 +17,12 @@
  *  registration_no, tax_no — additive; org-admin migration #21 extends the boundary view
  *  in lockstep). 0.4.0 = the Org Admin EPIC-008-M007 release: `listPersons` — the first
  *  list-MANY central-person read (search-first + capped + active-only), backing the
- *  "add a person to an app" directory picker in DC + CRM. Additive; no shape change to any
+ *  "add a person to an app" directory picker in DC + CRM. 0.4.1 = the Org Admin
+ *  EPIC-008-M007 §E release: the `legal_entity` + `farm` master reads gain a by-own-`id`
+ *  filter — an indexed single-row read backing DC's read-only central-master detail view
+ *  (replaces an O(N) read-all-then-find). Additive allow-list key; no shape change to any
  *  frozen API. */
-export const ORG_CONTRACT_VERSION = "0.4.0";
+export const ORG_CONTRACT_VERSION = "0.4.1";
 
 // Configuration (injected — never process.env)
 export {

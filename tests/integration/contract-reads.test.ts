@@ -116,6 +116,19 @@ RUN("readMaster — central source (integration)", () => {
     expect(active.items[0]!.slug).toBe("alpha");
   });
 
+  it("reads a single row by its own id via the central source (v0.4.1)", async () => {
+    const all = await readMaster(db, { master: "legal_entity", appCode: "crm" });
+    const beta = all.items.find((r) => r.slug === "beta")!;
+    const one = await readMaster(db, {
+      master: "legal_entity",
+      appCode: "crm",
+      filter: { id: String(beta.id) },
+    });
+    expect(one.items).toHaveLength(1);
+    expect(one.items[0]!.id).toBe(beta.id);
+    expect(one.items[0]!.slug).toBe("beta");
+  });
+
   it("shapes the asset steward_app → stewardApp and DROPS the null steward key (API-RES-009)", async () => {
     const trucks = await readMaster(db, { master: "asset", appCode: "rms" });
     const stewarded = trucks.items.find((r) => r.identifier === "TRK-01");

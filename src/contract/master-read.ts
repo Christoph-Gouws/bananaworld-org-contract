@@ -62,7 +62,11 @@ const MASTERS: Record<MasterName, MasterConfig> = {
       "t.id::text as id, t.name, t.slug, t.status, t.functional_currency, " +
       "t.default_language, t.registration_no, t.tax_no",
     from: "org.v_master_legal_entity t",
-    filters: { status: "status", legal_entity_id: "id" },
+    // `id` (v0.4.1) is the uniform by-own-id filter — an indexed single-row read for a
+    // consumer's detail view (DC's read-only central-master form, EPIC-008-M007 §E). The
+    // historical `legal_entity_id` alias is kept (a legal entity's own id IS its
+    // legal_entity_id); both map to the indexed `id` column.
+    filters: { status: "status", legal_entity_id: "id", id: "id" },
   },
   entity_role: {
     select: "t.id::text as id, t.legal_entity_id::text as legal_entity_id, t.role_type",
@@ -101,7 +105,10 @@ const MASTERS: Record<MasterName, MasterConfig> = {
     select:
       "t.id::text as id, t.legal_entity_id::text as legal_entity_id, t.code, t.name, t.status",
     from: "org.v_master_farm t",
-    filters: { legal_entity_id: "legal_entity_id", status: "status", code: "code" },
+    // `id` (v0.4.1) is the by-own-id filter — the indexed single-row read backing DC's
+    // read-only central-master detail view (EPIC-008-M007 §E; mirrors legal_entity).
+    // `legal_entity_id` here filters by the OWNING company, not the farm's own id.
+    filters: { legal_entity_id: "legal_entity_id", status: "status", code: "code", id: "id" },
   },
 };
 
