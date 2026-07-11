@@ -18,8 +18,9 @@ import {
 } from "../../src/index";
 
 describe("consuming-app registry pin", () => {
-  it("APP_CODES is exactly dc/crm/rms", () => {
-    expect([...APP_CODES]).toEqual(["dc", "crm", "rms"]);
+  it("APP_CODES is exactly dc/crm/rms/mv", () => {
+    // mv (Manga Verde) registered at v0.4.2 — EPIC-001-M-04, DECISION-080.
+    expect([...APP_CODES]).toEqual(["dc", "crm", "rms", "mv"]);
   });
 });
 
@@ -29,6 +30,7 @@ describe("least-privilege scope matrix pin (owner-approved, M2.3 gate; farm adde
       dc: ["legal_entity", "entity_role", "site", "asset", "station", "farm"],
       crm: ["legal_entity", "entity_role", "site"],
       rms: ["legal_entity", "site", "asset", "station", "farm"],
+      mv: ["legal_entity", "site"], // v0.4.2 — Manga Verde (DECISION-060/080)
     });
   });
   it("covers every registered app", () => {
@@ -46,7 +48,7 @@ describe("least-privilege scope matrix pin (owner-approved, M2.3 gate; farm adde
 
 describe("estate audit standard pin (AG-ADR-003)", () => {
   it("app codes / outcomes / deny layers are the frozen sets", () => {
-    expect([...AUDIT_APP_CODES]).toEqual(["dc", "crm", "rms", "org"]);
+    expect([...AUDIT_APP_CODES]).toEqual(["dc", "crm", "rms", "mv", "org"]);
     expect([...AUDIT_OUTCOMES]).toEqual(["success", "denied", "failed"]);
     expect([...AUDIT_DENY_LAYERS]).toEqual(["middleware", "repository", "rls", "trigger"]);
   });

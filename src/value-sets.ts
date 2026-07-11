@@ -10,6 +10,9 @@
  * Pure data — no DB, no server-only imports.
  */
 
-/** `org.app.app_code` (DB-CON-018) — the registry of consuming systems (extensible). */
-export const APP_CODES = ["dc", "crm", "rms"] as const;
+/** `org.app.app_code` (DB-CON-018) — the registry of consuming systems (extensible).
+ *  `mv` = Manga Verde (bananaworld-sw-mangaverde), registered at v0.4.2 (EPIC-001-M-04,
+ *  DECISION-080). Adding a code here requires the matching `org.app` row + `org.app.app_code`
+ *  CHECK superset in org-admin (framework_check_recreate_superset). */
+export const APP_CODES = ["dc", "crm", "rms", "mv"] as const;
 export type AppCode = (typeof APP_CODES)[number];

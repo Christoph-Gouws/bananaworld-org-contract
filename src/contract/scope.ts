@@ -15,7 +15,7 @@
  * Gate), not a silent code edit — from M005 that means a deliberate package version bump.
  *
  * NOTE on the Hub: AG-ADR-007 grants the Data & Accounting Hub read of `legal_entity`
- * ONLY — but the Hub is NOT yet a registered consuming app (APP_CODES = dc/crm/rms). When
+ * ONLY — but the Hub is NOT yet a registered consuming app (APP_CODES = dc/crm/rms/mv). When
  * it is added (a future Hub-side milestone) it joins APP_CODES + this matrix with
  * `["legal_entity"]`. Until then it is inert; an unregistered app is denied at the app
  * gate (UnknownAppError) before scope is even checked.
@@ -37,6 +37,10 @@ export const MASTER_READ_SCOPE: Record<AppCode, readonly MasterName[]> = {
   // RMS attributes crate movement → companies + sites + trucks + stations (no entity roles);
   // +farm since v0.3.0 (its farm pickers/name resolution read central farms directly).
   rms: ["legal_entity", "site", "asset", "station", "farm"],
+  // MV (Manga Verde, v0.4.2, DECISION-060/080) configures Plants under a central Legal Entity
+  // and reads sites → legal_entity + site only. Identity (Person) + the station-PIN flow are
+  // separate contract paths, not master reads (least-privilege: no asset/entity_role/farm).
+  mv: ["legal_entity", "site"],
 };
 
 /** True iff `app` is granted read of `master` under the least-privilege matrix. */
