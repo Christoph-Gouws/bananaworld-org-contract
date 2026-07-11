@@ -17,9 +17,9 @@
  */
 
 /** `org.audit_log.app_code` (DB-FIELD-050) — the system through which a change was
- *  made. Superset of the consuming-app registry (dc/crm/rms) + `org` (Org Admin
+ *  made. Superset of the consuming-app registry (dc/crm/rms/mv) + `org` (Org Admin
  *  itself, the auto-write default). */
-export const AUDIT_APP_CODES = ["dc", "crm", "rms", "org"] as const;
+export const AUDIT_APP_CODES = ["dc", "crm", "rms", "mv", "org"] as const;
 export type AuditAppCode = (typeof AUDIT_APP_CODES)[number];
 
 /** `org.audit_log.action` (DB-FIELD-051) — the estate action superset (DC-aligned +

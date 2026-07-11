@@ -21,8 +21,11 @@
  *  EPIC-008-M007 §E release: the `legal_entity` + `farm` master reads gain a by-own-`id`
  *  filter — an indexed single-row read backing DC's read-only central-master detail view
  *  (replaces an O(N) read-all-then-find). Additive allow-list key; no shape change to any
- *  frozen API. */
-export const ORG_CONTRACT_VERSION = "0.4.1";
+ *  frozen API. 0.4.2 = Manga Verde registered as a consuming app (EPIC-001-M-04,
+ *  DECISION-080): `mv` joins APP_CODES + AUDIT_APP_CODES + the master-read scope matrix
+ *  (`legal_entity`, `site`). Additive registry keys; no shape change to any frozen API.
+ *  Requires the matching `org.app` row + CHECK supersets in org-admin. */
+export const ORG_CONTRACT_VERSION = "0.4.2";
 
 // Configuration (injected — never process.env)
 export {
