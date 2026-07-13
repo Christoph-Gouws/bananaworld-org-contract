@@ -48,6 +48,22 @@ export interface OrgContractConfig {
   /** A central master read that failed outright (e.g. a lost GRANT) and degraded to local
    *  identity. Default: the estate `[central-link]` console.error convention. */
   onCentralReadFailure?: (kind: CentralMasterKind, linkCount: number, error: unknown) => void;
+  /**
+   * The station-auth table binding (EPIC-008-M001 / XSYS-RMS-010). The station-PIN /
+   * session / attribution flows read + write the caller's station tables; by DEFAULT these
+   * are Org Admin's `org.station` / `org.station_session`, so Org Admin, DC and Manga Verde
+   * are unaffected. A consumer that OWNS its own scan stations (RMS, under Station Autonomy)
+   * injects its own tables here (`rms.station` / `rms.station_session`) and the shared flow
+   * runs against them — no hand-mirror of the SQL. Identifiers are TRUSTED config, injected
+   * once at host startup (never request data), and are additionally allow-listed to a bare
+   * lowercase `schema.table` on read (a misconfigured value fails closed at use).
+   */
+  stationTables?: {
+    /** The station master table (default `org.station`). */
+    station?: string;
+    /** The station-session table (default `org.station_session`). */
+    stationSession?: string;
+  };
 }
 
 let current: OrgContractConfig = {};
@@ -118,6 +134,36 @@ export function getPinLockoutThreshold(): number {
 
 export function getPinLockoutWindowMin(): number {
   return positiveOrDefault(current.pinLockout?.windowMinutes, DEFAULT_LOCKOUT_WINDOW_MIN);
+}
+
+// ── Station-auth table binding (EPIC-008-M001 / XSYS-RMS-010) ────────────────────────────────
+const DEFAULT_STATION_TABLE = "org.station";
+const DEFAULT_STATION_SESSION_TABLE = "org.station_session";
+
+// A bare, lowercase `schema.table` — the only identifier shape a host may bind. Config is
+// host-injected (never request data), but allow-listing here makes the interpolation provably
+// safe (SEC / SAST) and turns a typo into a fail-closed error rather than broken SQL.
+const SAFE_TABLE_RE = /^[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*$/;
+
+function safeStationTable(value: string | undefined, fallback: string): string {
+  const table = value ?? fallback;
+  if (!SAFE_TABLE_RE.test(table)) {
+    throw new Error(
+      `@bananaworld/org-contract: invalid station table identifier ${JSON.stringify(table)} — ` +
+        `must be a bare lowercase schema.table (config-injected at startup, never request data).`,
+    );
+  }
+  return table;
+}
+
+/** The station master table the station-auth flow reads/updates (default `org.station`). */
+export function getStationTable(): string {
+  return safeStationTable(current.stationTables?.station, DEFAULT_STATION_TABLE);
+}
+
+/** The station-session table the station-auth flow reads/writes (default `org.station_session`). */
+export function getStationSessionTable(): string {
+  return safeStationTable(current.stationTables?.stationSession, DEFAULT_STATION_SESSION_TABLE);
 }
 
 /** DC's exact M004 fail-loud message (kept verbatim so consumer log/test expectations hold). */

@@ -26,6 +26,7 @@
 
 import { findActivePinCandidatesForLookup } from "../identity/credential-repo";
 import { findPersonById } from "../identity/person-read";
+import { getStationSessionTable, getStationTable } from "../config";
 import { withTransaction } from "../db/tx";
 import { SYSTEM_ACTOR_ID } from "../audit/standard";
 import { beginAppAudit, writeAppAudit } from "../audit/app-writer";
@@ -89,7 +90,7 @@ async function loadStationForPin(db: Queryable, stationId: string): Promise<Stat
   const { rows } = await db.query(
     `select id::text as id, auto_logoff_minutes,
             failed_pin_attempts, pin_first_failed_at, pin_locked_at
-       from org.station
+       from ${getStationTable()}
       where id = $1`,
     [stationId],
   );
@@ -190,7 +191,7 @@ export async function authenticateStationPin(
         appCode: req.appCode as AppCode,
       });
       const ins = await tx.query(
-        `insert into org.station_session (station_id, person_id, created_by)
+        `insert into ${getStationSessionTable()} (station_id, person_id, created_by)
          values ($1, $2, $2)
          returning id::text as id`,
         [station.id, personId],
@@ -200,7 +201,7 @@ export async function authenticateStationPin(
       const stationSessionId = inserted.id as string;
       // Clear the per-station throttle on a good tap-in.
       await tx.query(
-        `update org.station
+        `update ${getStationTable()}
             set failed_pin_attempts = 0, pin_first_failed_at = null, pin_locked_at = null
           where id = $1`,
         [station.id],
@@ -247,7 +248,7 @@ export async function authenticateStationPin(
     if (!isCollision) {
       const next = registerFailedAttempt(station.lockout, now);
       await tx.query(
-        `update org.station
+        `update ${getStationTable()}
             set failed_pin_attempts = $2, pin_first_failed_at = $3, pin_locked_at = $4
           where id = $1`,
         [station.id, next.failedPinAttempts, next.pinFirstFailedAt, next.pinLockedAt],

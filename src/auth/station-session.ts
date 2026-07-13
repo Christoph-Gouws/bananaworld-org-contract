@@ -16,6 +16,7 @@
 import type { AppCode } from "../value-sets";
 import type { Queryable } from "../queryable";
 import { beginAppAudit, writeAppAudit } from "../audit/app-writer";
+import { getStationSessionTable } from "../config";
 import { withTransaction } from "../db/tx";
 
 /**
@@ -29,7 +30,7 @@ export async function endOpenSessionsAtStation(
   args: { stationId: string; appCode: AppCode },
 ): Promise<number> {
   const closed = await tx.query(
-    `update org.station_session
+    `update ${getStationSessionTable()}
         set ended_at = now()
       where station_id = $1 and ended_at is null
       returning id::text as id, person_id::text as person_id`,
@@ -65,7 +66,7 @@ export async function logoutStationSession(
   return withTransaction(db, async (tx) => {
     await beginAppAudit(tx);
     const closed = await tx.query(
-      `update org.station_session
+      `update ${getStationSessionTable()}
           set ended_at = now()
         where id = $1 and ended_at is null
         returning id::text as id, person_id::text as person_id, station_id::text as station_id`,

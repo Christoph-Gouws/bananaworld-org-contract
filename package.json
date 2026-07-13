@@ -1,6 +1,6 @@
 {
   "name": "@bananaworld/org-contract",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "private": true,
   "description": "THE single shared consumption contract for the Bananaworld estate's central org layer (Org Admin EPIC-008-M005, DECISION-GATE-013). One implementation of: identity resolution (API-IDENT-001), master reads + the least-privilege scope matrix (API-MASTER-001), the station-PIN auth flow (verify + keyed pin_lookup + lockout + session open/close + station token), UUID-keyed central-master overlay helpers, the Estate Station Directory read, and the estate audit standard + app-path writer. Replaces the four hand-mirrored copies (org-admin internal, DC, CRM, RMS). Shipped as TypeScript source; consumers transpile it via Next.js transpilePackages. Config is INJECTED (configureOrgContract) — this package never reads process.env.",
   "license": "UNLICENSED",
