@@ -10,11 +10,13 @@ import { resolveOpenStationSession } from "../../src/auth/station-attribution";
 import type { Queryable } from "../../src/queryable";
 
 /**
- * The station-auth table binding (EPIC-008-M001 / XSYS-RMS-010). The shared station-PIN /
- * session / attribution flows read the caller's station tables; DEFAULT `org.*` (Org Admin /
- * DC / MV unaffected), a station-owning consumer (RMS) injects `rms.*`. Identifiers are
- * allow-listed to a bare lowercase `schema.table` so a typo fails closed rather than building
- * broken (or unsafe) SQL. No DB — the binding + its interpolation are pure config.
+ * The station-auth table binding (EPIC-008-M001 / XSYS-RMS-010; the `org.station` default was
+ * RETIRED at EPIC-008-M003, Station Partition Doctrine v2). The shared station-PIN / session /
+ * attribution flows read the caller's station tables. There is NO default: a station-owning
+ * consumer (RMS) MUST inject `rms.*`; an uninjected flow fails LOUD (a clear config error), never
+ * against the dropped `org.station`. Identifiers are allow-listed to a bare lowercase
+ * `schema.table` so a typo fails closed rather than building broken (or unsafe) SQL. No DB — the
+ * binding + its interpolation are pure config.
  */
 
 /** A fake pg client that records every SQL it is handed and returns no rows. */
@@ -38,10 +40,11 @@ afterEach(() => {
 });
 
 describe("station-auth table binding", () => {
-  it("defaults to org.station / org.station_session when unconfigured (Org Admin / DC / MV)", () => {
+  it("fails LOUD when unconfigured — no org.station default (Doctrine v2, EPIC-008-M003)", () => {
     resetOrgContractConfig();
-    expect(getStationTable()).toBe("org.station");
-    expect(getStationSessionTable()).toBe("org.station_session");
+    expect(() => getStationTable()).toThrow(/is not configured/);
+    expect(() => getStationTable()).toThrow(/stationTables\.station/);
+    expect(() => getStationSessionTable()).toThrow(/stationTables\.stationSession/);
   });
 
   it("returns the injected tables when a station-owning consumer binds its own (RMS)", () => {
@@ -52,10 +55,10 @@ describe("station-auth table binding", () => {
     expect(getStationSessionTable()).toBe("rms.station_session");
   });
 
-  it("merges partially — an unset table keeps its org default", () => {
+  it("requires BOTH tables — injecting only one still fails loud on the other", () => {
     configureOrgContract({ stationTables: { station: "rms.station" } });
     expect(getStationTable()).toBe("rms.station");
-    expect(getStationSessionTable()).toBe("org.station_session");
+    expect(() => getStationSessionTable()).toThrow(/stationTables\.stationSession/);
   });
 
   it("the attribution read runs against the INJECTED tables (rms.*)", async () => {
@@ -73,13 +76,12 @@ describe("station-auth table binding", () => {
     expect(joined).not.toContain("from org.station_session");
   });
 
-  it("the attribution read runs against org.* by default (no config)", async () => {
+  it("the attribution read fails loud when unconfigured — never queries a ghost org.station", async () => {
     resetOrgContractConfig();
     const cap = captureDb();
-    await resolveOpenStationSession(cap.db, A_UUID);
-    const joined = cap.sql().join("\n");
-    expect(joined).toContain("from org.station_session ss");
-    expect(joined).toContain("join org.station s on s.id = ss.station_id");
+    await expect(resolveOpenStationSession(cap.db, A_UUID)).rejects.toThrow(/is not configured/);
+    // The table accessor throws while building the SQL, so no query is ever issued.
+    expect(cap.sql()).toHaveLength(0);
   });
 
   it("rejects a non-schema.table identifier — fail closed at use, never broken/unsafe SQL", () => {

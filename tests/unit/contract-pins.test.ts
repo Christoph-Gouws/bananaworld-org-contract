@@ -24,12 +24,12 @@ describe("consuming-app registry pin", () => {
   });
 });
 
-describe("least-privilege scope matrix pin (owner-approved, M2.3 gate; farm added at v0.3.0 — EPIC-008-M006, DECISION-GATE-014)", () => {
+describe("least-privilege scope matrix pin (owner-approved, M2.3 gate; farm added at v0.3.0 — EPIC-008-M006, DECISION-GATE-014; station REMOVED at v0.6.0 — EPIC-008-M003 Station Partition Doctrine v2)", () => {
   it("is exactly the approved matrix", () => {
     expect(MASTER_READ_SCOPE).toEqual({
-      dc: ["legal_entity", "entity_role", "site", "asset", "station", "farm"],
+      dc: ["legal_entity", "entity_role", "site", "asset", "farm"],
       crm: ["legal_entity", "entity_role", "site"],
-      rms: ["legal_entity", "site", "asset", "station", "farm"],
+      rms: ["legal_entity", "site", "asset", "farm"],
       mv: ["legal_entity", "site"], // v0.4.2 — Manga Verde (DECISION-060/080)
     });
   });
@@ -40,9 +40,9 @@ describe("least-privilege scope matrix pin (owner-approved, M2.3 gate; farm adde
   });
   it("denies the un-granted reads", () => {
     expect(appMayReadMaster("crm", "asset")).toBe(false);
-    expect(appMayReadMaster("crm", "station")).toBe(false);
+    expect(appMayReadMaster("crm", "farm")).toBe(false);
     expect(appMayReadMaster("rms", "entity_role")).toBe(false);
-    expect(appMayReadMaster("dc", "station")).toBe(true);
+    expect(appMayReadMaster("dc", "farm")).toBe(true);
   });
 });
 

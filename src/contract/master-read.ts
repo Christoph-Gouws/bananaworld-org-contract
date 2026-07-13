@@ -1,6 +1,6 @@
 /**
  * The master-read contract — FROZEN (API-MASTER-001, AG-ADR-010). A consumer reads the
- * shared legal-entity / entity-role / site / asset / station lists read-only through this
+ * shared legal-entity / entity-role / site / asset / farm lists read-only through this
  * one boundary; it holds no copy (OD-005).
  *
  * THREE gates, in order, identical across both sources (so a denial is the same either
@@ -91,13 +91,9 @@ const MASTERS: Record<MasterName, MasterConfig> = {
         : ({ ...rest, stewardApp: steward_app as string } as MasterRow);
     },
   },
-  station: {
-    select:
-      "t.id::text as id, t.station_kind, t.site_id::text as site_id, " +
-      "t.asset_id::text as asset_id, t.code, t.name",
-    from: "org.v_master_station t",
-    filters: { station_kind: "station_kind", site_id: "site_id", asset_id: "asset_id" },
-  },
+  // `station` master RETIRED at v0.6.0 (EPIC-008-M003, Station Partition Doctrine v2): Org Admin no
+  // longer hosts stations (RMS owns its own in `rms.station`), so `org.v_master_station` was dropped.
+  // No consumer ever read it (dead since M001) — see MasterName in ./types.
   farm: {
     // v0.3.0 (EPIC-008-M006): farms became LISTABLE — post-teardown DC/RMS pickers read
     // central farms directly (a farm is a site owned by a legal entity, EPIC-008-M001;

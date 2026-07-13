@@ -49,19 +49,21 @@ export interface OrgContractConfig {
    *  identity. Default: the estate `[central-link]` console.error convention. */
   onCentralReadFailure?: (kind: CentralMasterKind, linkCount: number, error: unknown) => void;
   /**
-   * The station-auth table binding (EPIC-008-M001 / XSYS-RMS-010). The station-PIN /
-   * session / attribution flows read + write the caller's station tables; by DEFAULT these
-   * are Org Admin's `org.station` / `org.station_session`, so Org Admin, DC and Manga Verde
-   * are unaffected. A consumer that OWNS its own scan stations (RMS, under Station Autonomy)
-   * injects its own tables here (`rms.station` / `rms.station_session`) and the shared flow
-   * runs against them — no hand-mirror of the SQL. Identifiers are TRUSTED config, injected
-   * once at host startup (never request data), and are additionally allow-listed to a bare
-   * lowercase `schema.table` on read (a misconfigured value fails closed at use).
+   * The station-auth table binding (EPIC-008-M001 / XSYS-RMS-010; the `org.station` default was
+   * RETIRED at EPIC-008-M003). The station-PIN / session / attribution flows read + write the
+   * caller's station tables. There is NO default: a consumer that runs the station-auth flow MUST
+   * inject its own tables here (RMS: `rms.station` / `rms.station_session`). Org Admin no longer
+   * hosts stations (Station Partition Doctrine v2, EPIC-008-M003) and the former `org.station`
+   * default table was dropped — keeping it as a default would be a latent trap (a caller that
+   * forgot to inject would run against a table that no longer exists). An uninjected flow now fails
+   * LOUD at use (a clear config error), never silently against a ghost table. Identifiers are
+   * TRUSTED config, injected once at host startup (never request data), and are allow-listed to a
+   * bare lowercase `schema.table` on read (a missing or misconfigured value fails closed at use).
    */
   stationTables?: {
-    /** The station master table (default `org.station`). */
+    /** The station master table — REQUIRED to run the station-auth flow (e.g. `rms.station`). */
     station?: string;
-    /** The station-session table (default `org.station_session`). */
+    /** The station-session table — REQUIRED to run the station-auth flow (e.g. `rms.station_session`). */
     stationSession?: string;
   };
 }
@@ -136,34 +138,36 @@ export function getPinLockoutWindowMin(): number {
   return positiveOrDefault(current.pinLockout?.windowMinutes, DEFAULT_LOCKOUT_WINDOW_MIN);
 }
 
-// ── Station-auth table binding (EPIC-008-M001 / XSYS-RMS-010) ────────────────────────────────
-const DEFAULT_STATION_TABLE = "org.station";
-const DEFAULT_STATION_SESSION_TABLE = "org.station_session";
+// ── Station-auth table binding (EPIC-008-M001 / XSYS-RMS-010; org.station default RETIRED at M003) ──
+// A consumer that runs the station-PIN / session / attribution flow MUST inject its own station
+// tables (RMS: rms.station / rms.station_session). There is NO default — Org Admin no longer hosts
+// stations (Station Partition Doctrine v2, EPIC-008-M003) and org.station was dropped, so a default
+// would be a latent trap. An uninjected flow fails LOUD at use (missing()), never against a ghost table.
 
 // A bare, lowercase `schema.table` — the only identifier shape a host may bind. Config is
 // host-injected (never request data), but allow-listing here makes the interpolation provably
 // safe (SEC / SAST) and turns a typo into a fail-closed error rather than broken SQL.
 const SAFE_TABLE_RE = /^[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*$/;
 
-function safeStationTable(value: string | undefined, fallback: string): string {
-  const table = value ?? fallback;
-  if (!SAFE_TABLE_RE.test(table)) {
+function safeStationTable(value: string | undefined, which: "station" | "stationSession"): string {
+  if (value === undefined) missing(`stationTables.${which}`);
+  if (!SAFE_TABLE_RE.test(value)) {
     throw new Error(
-      `@bananaworld/org-contract: invalid station table identifier ${JSON.stringify(table)} — ` +
+      `@bananaworld/org-contract: invalid station table identifier ${JSON.stringify(value)} — ` +
         `must be a bare lowercase schema.table (config-injected at startup, never request data).`,
     );
   }
-  return table;
+  return value;
 }
 
-/** The station master table the station-auth flow reads/updates (default `org.station`). */
+/** The station master table the station-auth flow reads/updates (host-injected; e.g. `rms.station`). */
 export function getStationTable(): string {
-  return safeStationTable(current.stationTables?.station, DEFAULT_STATION_TABLE);
+  return safeStationTable(current.stationTables?.station, "station");
 }
 
-/** The station-session table the station-auth flow reads/writes (default `org.station_session`). */
+/** The station-session table the station-auth flow reads/writes (host-injected; e.g. `rms.station_session`). */
 export function getStationSessionTable(): string {
-  return safeStationTable(current.stationTables?.stationSession, DEFAULT_STATION_SESSION_TABLE);
+  return safeStationTable(current.stationTables?.stationSession, "stationSession");
 }
 
 /** DC's exact M004 fail-loud message (kept verbatim so consumer log/test expectations hold). */
