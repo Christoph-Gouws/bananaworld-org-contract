@@ -13,6 +13,7 @@
  */
 
 import type { Queryable } from "../queryable";
+import { getStationSessionTable, getStationTable } from "../config";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -40,8 +41,8 @@ export async function resolveOpenStationSession(
   const { rows } = await db.query(
     `select ss.person_id::text as person_id, ss.station_id::text as station_id,
             p.email as email, ss.started_at, ss.ended_at, s.auto_logoff_minutes
-       from org.station_session ss
-       join org.station s on s.id = ss.station_id
+       from ${getStationSessionTable()} ss
+       join ${getStationTable()} s on s.id = ss.station_id
        join org.person p on p.id = ss.person_id and p.status = 'active'
       where ss.id = $1`,
     [stationSessionId],
