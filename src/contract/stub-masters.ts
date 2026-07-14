@@ -9,9 +9,8 @@
  *
  * Representative, obviously-synthetic data (uuid-shaped ids prefixed `stub`) — never real
  * estate data. Kept small; it exercises shapes + filters, not scale. Field shapes mirror
- * the boundary views: station carries BOTH `site_id` and `asset_id` (one null per kind);
- * asset carries `stewardApp` ONLY when app-stewarded (an Org-Admin-stewarded asset omits
- * it — exactly as the central asset view's null `steward_app` is dropped).
+ * the boundary views: asset carries `stewardApp` ONLY when app-stewarded (an Org-Admin-stewarded
+ * asset omits it — exactly as the central asset view's null `steward_app` is dropped).
  *
  * Pure data — no DB, no server-only imports.
  */
@@ -110,25 +109,7 @@ export const STUB_MASTERS: Record<MasterName, readonly MasterRow[]> = {
       status: "active",
     },
   ],
-  // ORPHAN stations only (DECISION-GATE-007): a farm bay + a transport truck-as-station.
-  // No dc_bay (retired, migration #15) and no station on an app-stewarded asset — DC
-  // stations live in DC's public.station.
-  station: [
-    {
-      id: "0000stub-0000-4000-8000-0000000st0001",
-      station_kind: "farm_bay",
-      site_id: SITE_FARM,
-      asset_id: null,
-      code: "STUB-BAY-1",
-      name: "Stub Farm Bay 1",
-    },
-    {
-      id: "0000stub-0000-4000-8000-0000000st0002",
-      station_kind: "truck",
-      site_id: null,
-      asset_id: "0000stub-0000-4000-8000-0000000as0002",
-      code: "STUB-TRK-01",
-      name: "Stub Truck 01",
-    },
-  ],
+  // `station` stub RETIRED at v0.6.0 (EPIC-008-M003, Station Partition Doctrine v2): stations are
+  // no longer a central master (Org Admin hosts none; RMS owns its own in `rms.station`), so
+  // `org.v_master_station` was dropped and the boundary no longer serves station reads.
 };

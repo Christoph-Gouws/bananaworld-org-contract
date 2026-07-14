@@ -50,8 +50,11 @@ export type IdentityResolveResult =
 
 /** The masters a consumer may read (API-REQ-005). `farm` joined at v0.3.0
  *  (EPIC-008-M006): post-teardown DC/RMS LIST central farms directly — previously farms
- *  were only an overlay kind onto local `public.farm` rows (now dropped). */
-export type MasterName = "legal_entity" | "entity_role" | "site" | "asset" | "station" | "farm";
+ *  were only an overlay kind onto local `public.farm` rows (now dropped). `station` LEFT at
+ *  v0.6.0 (EPIC-008-M003, Station Partition Doctrine v2): Org Admin no longer hosts stations
+ *  (RMS owns its own scan stations in `rms.station`), so `org.v_master_station` was dropped and
+ *  station is no longer a central master — no consumer ever read it (it was dead since M001). */
+export type MasterName = "legal_entity" | "entity_role" | "site" | "asset" | "farm";
 
 export interface MasterReadRequest {
   master: MasterName;

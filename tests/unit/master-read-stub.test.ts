@@ -117,7 +117,7 @@ describe("readMaster (stub source, API-STUB-001)", () => {
 
   it("a malformed cursor falls back to offset 0 (never throws)", async () => {
     const result = await readMaster(NO_DB, {
-      master: "station",
+      master: "asset",
       appCode: "rms",
       cursor: "!!!not-base64!!!",
     });

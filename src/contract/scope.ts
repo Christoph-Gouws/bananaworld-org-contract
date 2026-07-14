@@ -29,14 +29,16 @@ import type { MasterName } from "./types";
 /** Which masters each registered consuming app may read (the approved recommended scope).
  *  Every AppCode MUST have an entry (org-admin's unit test enforces total coverage). */
 export const MASTER_READ_SCOPE: Record<AppCode, readonly MasterName[]> = {
-  // DC was the accidental owner of all of it → it keeps reading all five (+farm since
-  // v0.3.0 — post-teardown its farm pickers LIST central farms, EPIC-008-M006).
-  dc: ["legal_entity", "entity_role", "site", "asset", "station", "farm"],
+  // DC was the accidental owner of all of it → it keeps reading the central masters (+farm since
+  // v0.3.0 — post-teardown its farm pickers LIST central farms, EPIC-008-M006). `station` LEFT the
+  // matrix at v0.6.0 (EPIC-008-M003): stations are no longer central masters (Doctrine v2).
+  dc: ["legal_entity", "entity_role", "site", "asset", "farm"],
   // CRM ties a customer to its serving company → companies + roles + sites (no trucks/stations).
   crm: ["legal_entity", "entity_role", "site"],
-  // RMS attributes crate movement → companies + sites + trucks + stations (no entity roles);
-  // +farm since v0.3.0 (its farm pickers/name resolution read central farms directly).
-  rms: ["legal_entity", "site", "asset", "station", "farm"],
+  // RMS attributes crate movement → companies + sites + trucks (no entity roles); +farm since
+  // v0.3.0 (its farm pickers/name resolution read central farms directly). `station` LEFT at v0.6.0
+  // (EPIC-008-M003): RMS owns its stations in `rms.station`, not a central master.
+  rms: ["legal_entity", "site", "asset", "farm"],
   // MV (Manga Verde, v0.4.2, DECISION-060/080) configures Plants under a central Legal Entity
   // and reads sites → legal_entity + site only. Identity (Person) + the station-PIN flow are
   // separate contract paths, not master reads (least-privilege: no asset/entity_role/farm).

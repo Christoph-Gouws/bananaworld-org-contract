@@ -47,6 +47,9 @@ RUN("station-PIN authentication (integration)", () => {
       stationPinLookupSecret: () => "integration-lookup-key",
       stationTokenSecret: () => "integration-token-key",
       isProductionEnv: () => false,
+      // v0.6.0 (EPIC-008-M003): the station-auth flow has NO default table — the host injects
+      // its own. This harness's stand-in station tables are named org.* (setup.ts).
+      stationTables: { station: "org.station", stationSession: "org.station_session" },
     });
     await resetOrgSchema(db);
     ({ personId } = await seedPerson(db, { fullName: "Driver One", email: "d1@test.local" }));

@@ -154,6 +154,11 @@ RUN("station-session lifecycle + attribution (integration)", () => {
 
   beforeEach(async () => {
     resetOrgContractConfig();
+    // v0.6.0 (EPIC-008-M003): the station-auth flow has NO default table — inject the harness's
+    // stand-in station tables (named org.* in setup.ts) so the session helpers resolve them.
+    configureOrgContract({
+      stationTables: { station: "org.station", stationSession: "org.station_session" },
+    });
     await resetOrgSchema(db);
     ({ personId } = await seedPerson(db, { fullName: "Session Person", email: "s@test.local" }));
     stationId = await seedStation(db, { autoLogoffMinutes: 30 });
