@@ -90,6 +90,12 @@ export const STUB_MASTERS: Record<MasterName, readonly MasterRow[]> = {
       status: "active",
     },
   ],
+  // v0.7.0 (RMS EPIC-010-M004): `registration` (plate) + `description` (make/model) mirror the
+  // central asset view's new columns — always present as keys (null when unset), matching the
+  // central select which returns both columns for every row. The transport truck carries both
+  // (Org Admin stewards it and stamps them); the DC delivery truck carries neither centrally —
+  // DC keeps its plate/name in its own public.truck, and its central registration/description
+  // are null (its steward never stamps them) — exactly as production data looks.
   asset: [
     // App-stewarded (a DC delivery truck) → carries stewardApp (API-RES-009).
     {
@@ -99,6 +105,8 @@ export const STUB_MASTERS: Record<MasterName, readonly MasterRow[]> = {
       identifier: "STUB-DC-TRK-01",
       status: "active",
       stewardApp: "dc",
+      registration: null,
+      description: null,
     },
     // Org-Admin-stewarded (a transport-company truck) → stewardApp OMITTED (null steward).
     {
@@ -107,6 +115,8 @@ export const STUB_MASTERS: Record<MasterName, readonly MasterRow[]> = {
       asset_type: "truck",
       identifier: "STUB-TR-TRK-09",
       status: "active",
+      registration: "STUB-TR-09",
+      description: "Stub Freightliner M2",
     },
   ],
   // `station` stub RETIRED at v0.6.0 (EPIC-008-M003, Station Partition Doctrine v2): stations are

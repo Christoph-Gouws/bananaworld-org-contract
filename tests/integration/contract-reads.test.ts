@@ -98,9 +98,10 @@ RUN("readMaster — central source (integration)", () => {
         ('Beta Co', 'beta', 'inactive')
     `);
     await db.query(`
-      insert into org.v_master_asset (asset_type, identifier, status, steward_app) values
-        ('truck', 'TRK-01', 'active', 'dc'),
-        ('truck', 'TRK-02', 'active', null)
+      insert into org.v_master_asset
+        (asset_type, identifier, status, steward_app, registration, description) values
+        ('truck', 'TRK-01', 'active', 'dc', null, null),
+        ('truck', 'TRK-02', 'active', null, 'ABC246MP', 'Isuzu FTR 850')
     `);
   });
 
@@ -135,6 +136,20 @@ RUN("readMaster — central source (integration)", () => {
     const central = trucks.items.find((r) => r.identifier === "TRK-02");
     expect(stewarded?.stewardApp).toBe("dc");
     expect(central && "stewardApp" in central).toBe(false);
+  });
+
+  it("exposes the plate + make/model on the asset row, and no `name` (v0.7.0, RMS M004 D3/D10)", async () => {
+    const trucks = await readMaster(db, { master: "asset", appCode: "rms" });
+    const transport = trucks.items.find((r) => r.identifier === "TRK-02");
+    const delivery = trucks.items.find((r) => r.identifier === "TRK-01");
+    // The Org-Admin-stewarded transport truck carries the plate + make an operator recognises.
+    expect(transport?.registration).toBe("ABC246MP");
+    expect(transport?.description).toBe("Isuzu FTR 850");
+    // The DC-stewarded delivery truck has neither centrally (DC keeps them in public.truck).
+    expect(delivery?.registration).toBeNull();
+    expect(delivery?.description).toBeNull();
+    // 🔴 No `name` is ever exposed — a central name would override the plate downstream.
+    expect(transport && "name" in transport).toBe(false);
   });
 
   it("pages at 50 with an opaque cursor, identically to the stub source", async () => {

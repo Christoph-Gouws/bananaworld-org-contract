@@ -136,7 +136,8 @@ export async function resetOrgSchema(db: Client): Promise<void> {
     create table org.v_master_asset (
       id uuid primary key default gen_random_uuid(),
       legal_entity_id uuid, asset_type text not null, identifier text not null,
-      status text not null default 'active', steward_app text
+      status text not null default 'active', steward_app text,
+      registration text, description text
     );
     -- (org.v_master_station stand-in REMOVED at v0.6.0 — EPIC-008-M003 Station Partition Doctrine
     --  v2: station is no longer a central master; the boundary no longer serves station reads.)
