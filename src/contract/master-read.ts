@@ -79,9 +79,17 @@ const MASTERS: Record<MasterName, MasterConfig> = {
     filters: { legal_entity_id: "legal_entity_id", site_type: "site_type" },
   },
   asset: {
+    // v0.7.0 (RMS EPIC-010-M004, DECISION-M10.4-001 D3/D10; XSYS-RMS-013): + `registration`
+    // (the plate) and `description` (make/model) — additive on the frozen surface, in lockstep
+    // with the org-admin migration that exposes them on org.v_master_asset. They let RMS's truck
+    // picker show a bay operator the plate + make of the truck in front of them.
+    // 🔴 There is deliberately NO `name` here: foldCentralIdentity is `central.name ?? localName`,
+    // so a central `name` would WIN and silently re-label every DC delivery truck downstream from
+    // its plate. `description` is a distinct field the overlay never reads as an identity — so
+    // readCentralMasterIdentities keeps returning name:null for assets, exactly as before.
     select:
       "t.id::text as id, t.legal_entity_id::text as legal_entity_id, t.asset_type, " +
-      "t.identifier, t.status, t.steward_app",
+      "t.identifier, t.status, t.steward_app, t.registration, t.description",
     from: "org.v_master_asset t",
     filters: { legal_entity_id: "legal_entity_id", asset_type: "asset_type", status: "status" },
     map: (row) => {
