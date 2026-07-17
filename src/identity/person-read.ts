@@ -52,6 +52,24 @@ export async function findPersonById(db: Queryable, id: string): Promise<Central
   return row ? toPerson(row) : null;
 }
 
+/** Batch-resolve people by canonical id — one query, so a caller rendering a LIST of people
+ *  never fans out into N reads. Malformed ids are skipped; the Map holds only resolved ids.
+ *  (v0.8.0 — added alongside {@link module:identity/access-status}, whose batch form needs it.) */
+export async function findPersonsByIds(
+  db: Queryable,
+  ids: readonly string[],
+): Promise<Map<string, CentralPerson>> {
+  const valid = [...new Set(ids.filter((id) => UUID_RE.test(id)))];
+  const out = new Map<string, CentralPerson>();
+  if (valid.length === 0) return out;
+  const { rows } = await db.query(`${SELECT} where id = any($1::uuid[])`, [valid]);
+  for (const row of rows) {
+    const person = toPerson(row);
+    out.set(person.personId, person);
+  }
+  return out;
+}
+
 /** Resolve by email login (case-folded — emails are stored lowercase, DB-CON-006). */
 export async function findPersonByEmail(
   db: Queryable,

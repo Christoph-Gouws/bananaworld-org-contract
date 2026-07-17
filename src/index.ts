@@ -73,6 +73,7 @@ export {
 // findPersonsByAuthIds) remain available via the "./person-read" subpath, as before.
 export {
   findPersonById,
+  findPersonsByIds,
   findPersonByEmail,
   findPersonByLogin,
   findActivePersonByEmail,
@@ -85,6 +86,15 @@ export {
   type ListPersonsOptions,
 } from "./identity/person-read";
 
+// The person ACCESS-STATUS read (v0.8.0) — "does this person have a login / a PIN, and are
+// they active?" Read-only and identity-only; provisioning stays in Org Admin (strategy
+// Rule 2). Backs the Login/PIN status chips on every app's user-admin screen (Rule 1).
+export {
+  getPersonAccessStatus,
+  getPersonAccessStatuses,
+  type PersonAccessStatus,
+} from "./identity/access-status";
+
 // Credential store (org.credential) — the login half + the issuance half
 export {
   findActivePinCandidatesForLookup,
@@ -92,6 +102,7 @@ export {
   issueOrResetPin,
   revokeActivePin,
   getCredentialStatus,
+  getCredentialStatuses,
   type PinCandidate,
   type IssuePinInput,
   type CredentialStatus,

@@ -51,6 +51,40 @@ export const AUDIT_ACTIONS = [
   // is not granted is audited (outcome='denied', deny_layer='repository'); successful
   // reads use operational logging (API-LOG-003), not the immutable trail.
   "master_read",
+  // ---------------------------------------------------------------------------
+  // The ESTATE ACCOUNT DESK (Org Admin EPIC-010; DECISION-GATE-018 D2). Only Org Admin
+  // ever emits these — it is the estate's SOLE login minter (user-management strategy
+  // Rule 2), and no other app holds Supabase Auth admin capability. Named to mirror
+  // `pin_issue`/`pin_reset` above: the same concept on the person's OTHER credential.
+  //
+  // ⚠ `login` (above) means "a person signed in THEMSELVES"; `login_issue` means "an admin
+  // minted a login FOR someone". Adjacent words, different subjects — the collision was
+  // weighed at D2 and accepted: the pin_*/login_* symmetry is worth more than it costs.
+  //
+  // The FULL account-desk superset is seeded HERE, at once, though M002–M004 emit them in
+  // turn — the M1.3 precedent, so the DB CHECK is not re-cut every milestone.
+  // ---------------------------------------------------------------------------
+  /** An estate login was created (or an existing auth user adopted) for a person, and
+   *  `org.person.auth_user_id` stamped. Emitted by the account desk (M002). */
+  "login_issue",
+  /** A password setup/reset link was generated. The payload records the PURPOSE
+   *  (setup | reset) — NEVER the link itself, which is a live credential (SEC-CRED-001,
+   *  SEC-CONC-002: never logged, never persisted). M002. */
+  "login_link_issue",
+  /** An orphaned auth user (present in Supabase Auth, unstamped on `org.person`) was
+   *  reconciled to its person — the repair for the create-login two-system write, whose
+   *  residual window is structural: `auth.users` is unreachable from SQL (DB-MIG-004), so
+   *  there is no shared transaction to have. M003. */
+  "login_reconcile",
+  /** A person's live Supabase sessions were revoked, closing the in-flight-token window
+   *  that `org.person.status='inactive'` alone leaves open. Deactivate ONLY (strategy
+   *  Rule 5 / OQ-3). M003. */
+  "session_revoke",
+  /** An invite / password-reset EMAIL was dispatched. Distinct from `login_link_issue`:
+   *  a link appearing on an admin's screen and a link leaving the building are different
+   *  events with different exposure. Payload carries purpose + the provider message id —
+   *  never the link. M004. */
+  "invite_send",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 

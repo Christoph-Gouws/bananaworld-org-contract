@@ -9,6 +9,14 @@ lived in org-admin, Bananaworld-DC, Bananaworld-CRM and Bananaworld-RMS.
 
 - **Identity resolution** — `resolveIdentity` (FROZEN, API-IDENT-001) + the low-level
   `org.person` reads.
+- **Person access status** (v0.8.0) — `getPersonAccessStatus` / `getPersonAccessStatuses`
+  → `{status, hasLogin, pinSet}`: the one read that answers *"can this person actually get
+  in, and how?"* Backs the **Login / PIN status chips** every app's user-admin screen shows
+  (estate user-management strategy Rule 1/Rule 6), so "granted a role but never given a
+  login" is visible at the point of granting instead of surfacing as a generic login error.
+  Read-only and identity-only — **provisioning is NOT in this package**: minting a login,
+  issuing a setup link and revoking sessions live exclusively in Org Admin, the estate's
+  sole account desk (strategy Rule 2).
 - **Master reads** — `readMaster` (FROZEN, API-MASTER-001) over the `org.v_master_*`
   boundary views, the per-app least-privilege scope matrix, and the DEV-stub source.
 - **The station-PIN auth flow** — bcrypt verify, the keyed `pin_lookup` blind index
