@@ -155,6 +155,31 @@ export async function getCredentialStatus(
     : { pinSet: false, setAt: null };
 }
 
+/** Batch-read active-PIN state (never the hash) — ONE query, so a caller rendering a LIST
+ *  of people never fans out into N reads. The Map holds an entry for EVERY id asked for, so
+ *  a caller need not distinguish "holds no PIN" from "was not looked up". (v0.8.0 — the
+ *  batch half of {@link getCredentialStatus}, added so `getPersonAccessStatuses` stays
+ *  O(1) queries. It lives HERE, not in its caller, because every read of org.credential
+ *  lives in this module — the centrality rule this file is built on.) */
+export async function getCredentialStatuses(
+  db: Queryable,
+  personIds: readonly string[],
+): Promise<Map<string, CredentialStatus>> {
+  const out = new Map<string, CredentialStatus>();
+  const ids = [...new Set(personIds)];
+  for (const id of ids) out.set(id, { pinSet: false, setAt: null });
+  if (ids.length === 0) return out;
+  const { rows } = await db.query(
+    `select person_id::text as person_id, set_at from org.credential
+      where person_id = any($1::uuid[]) and active = true and kind = 'pin'`,
+    [ids],
+  );
+  for (const row of rows) {
+    out.set(row.person_id as string, { pinSet: true, setAt: (row.set_at as Date) ?? null });
+  }
+  return out;
+}
+
 /**
  * Issue or reset a person's one active PIN (the supersession wrapper around the
  * `issueActivePin` primitive). In one transaction: deactivate any current active credential,
