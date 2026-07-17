@@ -85,30 +85,61 @@ export async function resetOrgSchema(db: Client): Promise<void> {
       created_by uuid
     );
 
+    -- ⚠ TD-M001-001 (fixed, EPIC-010-M005 gate ruling): this stand-in previously drifted
+    -- from the REAL org.audit_log — 'entity_type' vs the real 'entity', 'created_at' vs
+    -- the real 'at', a bigint id vs the real uuid, and none of the real CHECKs. Two stale
+    -- things agreeing look exactly like lockstep: the package's audit tests were passing
+    -- against a table shape that exists nowhere. Kept aligned to org-admin migrations
+    -- ...0630000008 (table) + ...0630000011 (writer) + ...0717000001 (the live action
+    -- CHECK). If org-admin re-cuts either, re-cut THIS in the same change.
     create table org.audit_log (
-      id bigint generated always as identity primary key,
+      id uuid primary key default gen_random_uuid(),
       actor_person_id uuid not null,
       app_code text not null,
-      action text not null,
-      entity_type text not null,
+      action text not null check (action in (
+        'create', 'update', 'deactivate',
+        'pin_issue', 'pin_reset',
+        'role_assign', 'role_revoke',
+        'login', 'logout', 'auto_logoff', 'pin_failure',
+        'audit_log_read', 'audit_log_export',
+        'master_read',
+        'login_issue', 'login_link_issue', 'login_reconcile',
+        'session_revoke', 'invite_send'
+      )),
+      entity text not null check (length(trim(entity)) > 0),
       entity_id uuid,
       before jsonb,
       after jsonb,
-      outcome text not null,
+      outcome text not null default 'success' check (outcome in ('success', 'denied', 'failed')),
       deny_layer text,
-      created_at timestamptz not null default now()
+      at timestamptz not null default now(),
+      constraint audit_log_deny_layer_when_denied check (
+        (outcome = 'denied' and deny_layer in ('middleware', 'repository', 'rls', 'trigger'))
+        or (outcome <> 'denied' and deny_layer is null)
+      )
     );
 
-    -- Stand-in for the SECURITY DEFINER app-path writer (M1.3). Same argument order the
-    -- package calls it with.
+    -- Stand-in for the SECURITY DEFINER app-path writer (M1.3) — the real signature,
+    -- defaults and coalesces (org-admin ...0630000011). SECURITY DEFINER itself is not
+    -- reproduced: the stand-in has no RLS to bypass, and the calling surface is identical.
     create function org.audit_write_app(
       p_actor uuid, p_app_code text, p_action text, p_entity text, p_entity_id uuid,
-      p_before jsonb, p_after jsonb, p_outcome text, p_deny_layer text
-    ) returns bigint language sql as $$
+      p_before jsonb, p_after jsonb, p_outcome text default 'success',
+      p_deny_layer text default null
+    ) returns uuid language plpgsql as $$
+    declare
+      v_id uuid;
+    begin
       insert into org.audit_log
-        (actor_person_id, app_code, action, entity_type, entity_id, before, after, outcome, deny_layer)
-      values (p_actor, p_app_code, p_action, p_entity, p_entity_id, p_before, p_after, p_outcome, p_deny_layer)
-      returning id;
+        (actor_person_id, app_code, action, entity, entity_id, before, after, outcome, deny_layer)
+      values
+        (coalesce(p_actor, '00000000-0000-0000-0000-000000000000'::uuid),
+         coalesce(nullif(p_app_code, ''), 'org'),
+         p_action, p_entity, p_entity_id, p_before, p_after,
+         coalesce(nullif(p_outcome, ''), 'success'), p_deny_layer)
+      returning id into v_id;
+      return v_id;
+    end;
     $$;
 
     -- The frozen boundary-view shapes, as stand-in TABLES (a table satisfies the same
@@ -188,8 +219,10 @@ export async function auditRows(
   db: Client,
   action?: string,
 ): Promise<Array<Record<string, unknown>>> {
+  // ⚠ `order by at`, not `id` — the real id is a random uuid (gen_random_uuid()), so id
+  // order is meaningless. Autocommit inserts get distinct now() values.
   const { rows } = action
-    ? await db.query(`select * from org.audit_log where action = $1 order by id`, [action])
-    : await db.query(`select * from org.audit_log order by id`);
+    ? await db.query(`select * from org.audit_log where action = $1 order by at`, [action])
+    : await db.query(`select * from org.audit_log order by at`);
   return rows;
 }
