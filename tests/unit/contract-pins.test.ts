@@ -18,9 +18,10 @@ import {
 } from "../../src/index";
 
 describe("consuming-app registry pin", () => {
-  it("APP_CODES is exactly dc/crm/rms/mv", () => {
+  it("APP_CODES is exactly dc/crm/rms/mv/ph", () => {
     // mv (Manga Verde) registered at v0.4.2 — EPIC-001-M-04, DECISION-080.
-    expect([...APP_CODES]).toEqual(["dc", "crm", "rms", "mv"]);
+    // ph (Packhouse) registered at v0.8.1 — API-CHG-011 part a, DLC-DEC-044.
+    expect([...APP_CODES]).toEqual(["dc", "crm", "rms", "mv", "ph"]);
   });
 });
 
@@ -31,6 +32,7 @@ describe("least-privilege scope matrix pin (owner-approved, M2.3 gate; farm adde
       crm: ["legal_entity", "entity_role", "site"],
       rms: ["legal_entity", "site", "asset", "farm"],
       mv: ["legal_entity", "site"], // v0.4.2 — Manga Verde (DECISION-060/080)
+      ph: ["legal_entity", "site"], // v0.8.1 — Packhouse (API-CHG-011 part a, DLC-DEC-044)
     });
   });
   it("covers every registered app", () => {
@@ -43,12 +45,17 @@ describe("least-privilege scope matrix pin (owner-approved, M2.3 gate; farm adde
     expect(appMayReadMaster("crm", "farm")).toBe(false);
     expect(appMayReadMaster("rms", "entity_role")).toBe(false);
     expect(appMayReadMaster("dc", "farm")).toBe(true);
+    expect(appMayReadMaster("ph", "site")).toBe(true);
+    expect(appMayReadMaster("ph", "legal_entity")).toBe(true);
+    for (const m of ["asset", "farm", "entity_role"] as const) {
+      expect(appMayReadMaster("ph", m)).toBe(false);
+    }
   });
 });
 
 describe("estate audit standard pin (AG-ADR-003)", () => {
   it("app codes / outcomes / deny layers are the frozen sets", () => {
-    expect([...AUDIT_APP_CODES]).toEqual(["dc", "crm", "rms", "mv", "org"]);
+    expect([...AUDIT_APP_CODES]).toEqual(["dc", "crm", "rms", "mv", "ph", "org"]);
     expect([...AUDIT_OUTCOMES]).toEqual(["success", "denied", "failed"]);
     expect([...AUDIT_DENY_LAYERS]).toEqual(["middleware", "repository", "rls", "trigger"]);
   });

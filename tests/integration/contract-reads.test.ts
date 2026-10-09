@@ -182,4 +182,39 @@ RUN("readMaster — central source (integration)", () => {
     expect(denials[0]!.deny_layer).toBe("repository");
     expect((denials[0]!.after as { reason: string }).reason).toBe("forbidden_scope");
   });
+
+  // CR-ORG-CONTRACT-001 (API-CHG-011 part a) — the packhouse `ph` is a registered consuming app.
+  it("ph (v0.8.1) reads site (packhouse type filter passes through) once its org.app row is active", async () => {
+    await db.query(
+      `insert into org.app (app_code, name, status) values ('ph', 'Packhouse', 'active')`,
+    );
+    await db.query(
+      `insert into org.v_master_site (site_type, name) values ('packhouse', 'PH One'), ('dc', 'DC One')`,
+    );
+    const page = await readMaster(db, {
+      master: "site",
+      appCode: "ph",
+      filter: { site_type: "packhouse" },
+    });
+    expect(page.items.map((r) => r.name)).toEqual(["PH One"]);
+  });
+
+  it("ph is denied asset and audited with app_code 'ph'", async () => {
+    await db.query(
+      `insert into org.app (app_code, name, status) values ('ph', 'Packhouse', 'active')`,
+    );
+    await expect(readMaster(db, { master: "asset", appCode: "ph" })).rejects.toBeInstanceOf(
+      ForbiddenScopeError,
+    );
+    const denials = await auditRows(db, "master_read");
+    expect(denials).toHaveLength(1);
+    expect(denials[0]!.app_code).toBe("ph");
+    expect(denials[0]!.outcome).toBe("denied");
+  });
+
+  it("ph with no org.app row is refused at the app gate (fails closed)", async () => {
+    await expect(readMaster(db, { master: "site", appCode: "ph" })).rejects.toBeInstanceOf(
+      UnknownAppError,
+    );
+  });
 });

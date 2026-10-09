@@ -12,7 +12,8 @@
 
 /** `org.app.app_code` (DB-CON-018) — the registry of consuming systems (extensible).
  *  `mv` = Manga Verde (bananaworld-sw-mangaverde), registered at v0.4.2 (EPIC-001-M-04,
- *  DECISION-080). Adding a code here requires the matching `org.app` row + `org.app.app_code`
+ *  DECISION-080). `ph` = Packhouse (bananaworld-ph), registered at v0.8.1 (API-CHG-011 part a,
+ *  DLC-DEC-044). Adding a code here requires the matching `org.app` row + `org.app.app_code`
  *  CHECK superset in org-admin (framework_check_recreate_superset). */
-export const APP_CODES = ["dc", "crm", "rms", "mv"] as const;
+export const APP_CODES = ["dc", "crm", "rms", "mv", "ph"] as const;
 export type AppCode = (typeof APP_CODES)[number];

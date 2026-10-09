@@ -15,7 +15,7 @@
  * Gate), not a silent code edit — from M005 that means a deliberate package version bump.
  *
  * NOTE on the Hub: AG-ADR-007 grants the Data & Accounting Hub read of `legal_entity`
- * ONLY — but the Hub is NOT yet a registered consuming app (APP_CODES = dc/crm/rms/mv). When
+ * ONLY — but the Hub is NOT yet a registered consuming app (APP_CODES = dc/crm/rms/mv/ph). When
  * it is added (a future Hub-side milestone) it joins APP_CODES + this matrix with
  * `["legal_entity"]`. Until then it is inert; an unregistered app is denied at the app
  * gate (UnknownAppError) before scope is even checked.
@@ -43,6 +43,10 @@ export const MASTER_READ_SCOPE: Record<AppCode, readonly MasterName[]> = {
   // and reads sites → legal_entity + site only. Identity (Person) + the station-PIN flow are
   // separate contract paths, not master reads (least-privilege: no asset/entity_role/farm).
   mv: ["legal_entity", "site"],
+  // PH (Packhouse, v0.8.1, API-CHG-011 part a / DLC-DEC-044) links each packhouse to its estate
+  // site and shows the owning company → legal_entity + site only (farms/items come from DC's
+  // public masters by FK; no asset/entity_role/farm).
+  ph: ["legal_entity", "site"],
 };
 
 /** True iff `app` is granted read of `master` under the least-privilege matrix. */
