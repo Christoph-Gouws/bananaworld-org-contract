@@ -1,0 +1,16 @@
+{
+  "files": 4,
+  "lines": 30,
+  "steps": 2,
+  "uiBearing": false,
+  "epicRecommended": false,
+  "epicReason": "",
+  "seams": [
+    "Org Admin writes org.app 'ph' + app_code CHECKs (part a); contract describes",
+    "Packhouse writes org.audit_log rows as 'ph' via contract writer; Org Admin viewer reads",
+    "Org Admin owns site_type 'packhouse'; contract carries no site-type set (no-op here)",
+    "Contract owns ph read scope (legal_entity, site); packhouse reads",
+    "Contract merges first; Org Admin part a + packhouse pin the merged sha"
+  ],
+  "migrationExpected": false
+}
