@@ -149,6 +149,43 @@ export {
 } from "./auth/station-pairing";
 export { resolveOpenStationSession, type OpenStationSession } from "./auth/station-attribution";
 
+// Device-key signed offline capture + the confined drain session (v0.9.0, CR-ORG-CONTRACT-002;
+// TA-OFF-008 / STI-DEV-005 / API-OFF-001). The device-side format is also importable on its own,
+// browser-safe, via the "./signed-capture" subpath. The package holds the shared rules and the
+// credential; the device list, token record and drain endpoint stay with the host.
+export {
+  CAPTURE_MESSAGE_PREFIX,
+  CAPTURE_GRACE_MAX_MINUTES,
+  CAPTURE_REFUSAL_CODES,
+  canonicalJson,
+  captureMessage,
+  signCapture,
+  verifyCaptureDeviceSignature,
+  decideCaptureAcceptance,
+  type CanonicalJson,
+  type CaptureEnvelope,
+  type CaptureTokenRecord,
+  type AcceptedCapture,
+  type CaptureAcceptance,
+  type CaptureRefusalCode,
+  type DecideCaptureAcceptanceInput,
+} from "./capture/signed-capture";
+export {
+  DRAIN_SESSION_MARKER,
+  DRAIN_SESSION_CONFINED,
+  DRAIN_SESSION_MAX_SECONDS,
+  verifySignedCapture,
+  mintDrainSession,
+  verifyDrainSession,
+  isDrainSession,
+  drainSessionDbClaims,
+  type CaptureDevice,
+  type VerifiedCapture,
+  type VerifyCaptureResult,
+  type MintDrainSessionInput,
+  type DrainSessionClaims,
+} from "./capture/drain-session";
+
 // The estate audit standard + the app-path writer (org.audit_write_app)
 export {
   AUDIT_APP_CODES,

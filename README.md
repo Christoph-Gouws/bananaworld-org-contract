@@ -59,6 +59,27 @@ configureOrgContract({
 Everything defaults FAIL-CLOSED: unset secrets throw at use; an unconfigured environment
 is treated as production (so the DEV stub is refused — AG-ADR-006).
 
+## Signed offline capture + the drain session (v0.9.0)
+
+A registered floor device signs each queued action with its own ECDSA P-256 key; the server
+replays a drained action under a confined drain session (packhouse TA-OFF-008 / STI-DEV-005 /
+API-OFF-001). The package holds the shared rules and the credential; the device list, the
+per-token record and the drain endpoint stay with the host.
+
+- `@bananaworld/org-contract/signed-capture` — browser-safe (WebCrypto only): `signCapture`,
+  `captureMessage` (`bw-capture-v1\n` + canonical JSON), `verifyCaptureDeviceSignature`,
+  `decideCaptureAcceptance` (server clock, grace 0–90 min after the SERVER-recorded expiry,
+  revocation + offline sign-out sequence, dating clamped to the token's validity).
+- `@bananaworld/org-contract/drain-session` — server only: `verifySignedCapture` (device
+  registered → floor-token signature → same device → device signature; the person comes from the
+  token only), `mintDrainSession` (≤ 300 s, `bw_session: "drain"`, audience `bw-drain`),
+  `verifyDrainSession`, `isDrainSession`, `drainSessionDbClaims`.
+- Optional config: `captureTokenKey`, `drainSessionSecret` (no defaults; the drain secret must
+  differ from `stationTokenSecret` and `captureTokenKey`).
+- Refusal codes: `capture_expired`, `capture_token_revoked`, `capture_signature_invalid`,
+  `device_not_registered`, and `drain_session_confined` for the host to return on every other
+  endpoint.
+
 ## Freeze discipline
 
 API-IDENT-001 / API-MASTER-001 remain frozen (AG-ADR-010). From M005 the discipline lives

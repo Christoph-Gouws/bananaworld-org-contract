@@ -1,0 +1,16 @@
+{
+  "files": 6,
+  "lines": 500,
+  "steps": 3,
+  "uiBearing": false,
+  "epicRecommended": false,
+  "epicReason": "",
+  "seams": [
+    "org-contract owns the capture format; packhouse device signs, packhouse server verifies",
+    "Packhouse owns device record + token record; this package reads them via the caller",
+    "org-contract mints/verifies the drain session; packhouse drain endpoint uses it, all else refuses",
+    "DC lot/derivation functions read the drain session's person claim (no DC change)",
+    "Package pin: packhouse pins the merged main sha at EPIC-002 entry"
+  ],
+  "migrationExpected": false
+}

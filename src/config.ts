@@ -66,6 +66,17 @@ export interface OrgContractConfig {
     /** The station-session table — REQUIRED to run the station-auth flow (e.g. `rms.station_session`). */
     stationSession?: string;
   };
+  /**
+   * The key the host signs its station-bound floor JWT with (CR-ORG-CONTRACT-002). Needed only by
+   * `verifySignedCapture`. NO default — an unconfigured call fails closed at use.
+   */
+  captureTokenKey?: () => string | Uint8Array;
+  /**
+   * The HS256 key for the confined drain session (CR-ORG-CONTRACT-002). Needed only by the
+   * drain-session functions. NO default; and it must differ from `stationTokenSecret` and
+   * `captureTokenKey` — a drain session is never minted under a key another token reader trusts.
+   */
+  drainSessionSecret?: () => string;
 }
 
 let current: OrgContractConfig = {};
@@ -99,6 +110,33 @@ export function getStationTokenSecret(): string {
   const accessor = current.stationTokenSecret ?? (() => missing("stationTokenSecret"));
   const value = accessor();
   if (typeof value !== "string" || value.length === 0) missing("stationTokenSecret");
+  return value;
+}
+
+function sameKey(a: string | Uint8Array, b: string | Uint8Array): boolean {
+  const enc = (k: string | Uint8Array) => (typeof k === "string" ? new TextEncoder().encode(k) : k);
+  const [x, y] = [enc(a), enc(b)];
+  return x.length === y.length && x.every((byte, i) => byte === y[i]);
+}
+
+export function getCaptureTokenKey(): string | Uint8Array {
+  const accessor = current.captureTokenKey ?? (() => missing("captureTokenKey"));
+  const value = accessor();
+  if (value === undefined || value === null || value.length === 0) missing("captureTokenKey");
+  return value;
+}
+
+export function getDrainSessionSecret(): string {
+  const accessor = current.drainSessionSecret ?? (() => missing("drainSessionSecret"));
+  const value = accessor();
+  if (typeof value !== "string" || value.length === 0) missing("drainSessionSecret");
+  const others = [current.stationTokenSecret?.(), current.captureTokenKey?.()];
+  if (others.some((other) => other && sameKey(value, other))) {
+    throw new Error(
+      "@bananaworld/org-contract: drainSessionSecret must differ from stationTokenSecret and " +
+        "captureTokenKey — a drain session must not be accepted by any other token reader.",
+    );
+  }
   return value;
 }
 
