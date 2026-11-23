@@ -9,6 +9,9 @@ lived in org-admin, Bananaworld-DC, Bananaworld-CRM and Bananaworld-RMS.
 
 - **Identity resolution** — `resolveIdentity` (FROZEN, API-IDENT-001) + the low-level
   `org.person` reads.
+- **Paged people read** (v0.10.0) — `pagePersonsByIds`: one page of the CALLER's own ids
+  (`{rows,total,offset}`, name order, literal search, max 200 a page). It returns only ids the
+  caller named, so it cannot enumerate the estate directory.
 - **Person access status** (v0.8.0) — `getPersonAccessStatus` / `getPersonAccessStatuses`
   → `{status, hasLogin, pinSet}`: the one read that answers *"can this person actually get
   in, and how?"* Backs the **Login / PIN status chips** every app's user-admin screen shows

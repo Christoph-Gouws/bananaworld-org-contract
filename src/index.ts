@@ -81,9 +81,14 @@ export {
   LIST_PERSONS_MIN_QUERY,
   LIST_PERSONS_DEFAULT_LIMIT,
   LIST_PERSONS_MAX_LIMIT,
+  pagePersonsByIds,
+  PAGE_PERSONS_MAX_LIMIT,
   type CentralPerson,
   type PersonSummary,
   type ListPersonsOptions,
+  type PagePersonsOptions,
+  type PagedPerson,
+  type PersonPage,
 } from "./identity/person-read";
 
 // The person ACCESS-STATUS read (v0.8.0) — "does this person have a login / a PIN, and are
