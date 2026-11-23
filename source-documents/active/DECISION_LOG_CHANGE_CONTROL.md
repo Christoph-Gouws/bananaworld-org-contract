@@ -1,5 +1,14 @@
 # Decision log — change control (bananaworld-org-contract)
 
+## CHANGE/DECISION — CR-ORG-CONTRACT-004 (2026-11-23)
+
+- **Asked:** a paged, id-limited people read for the packhouse People list at estate scale (needed by CR-BANANAWORLD-PH-005; spec from that plan §3). `pagePersonsByIds` returns one page of only the ids the caller names, with total, name search and a focus page.
+- **Decided at the plan gate:** plan APPROVED — ship on-green. Additive read-only export beside `findPersonsByIds`; no SQL migration; version 0.10.0. The tag `v0.10.0` goes on the MERGED main sha after merge (never a branch sha); no consumer pin is bumped here.
+- **Layout:** n/a (not UI-bearing). **Ship mode:** on-green.
+- **Clarify questions/answers:** none recorded.
+- **Not in scope:** any org.* schema change; any consumer pin bump; the packhouse People screen (CR-BANANAWORLD-PH-005).
+- **Debt:** `ORG_CONTRACT_VERSION` constant drift (runs/change-04/technical-debt.md).
+
 ## CHANGE/DECISION — CR-ORG-CONTRACT-002 (2026-10-11)
 
 - **Asked:** device-key signed offline capture and the confined drain session (bananaworld-ph plan id API-CHG-011 part b; TA-OFF-008, STI-DEV-005, API-OFF-001; DLC-DEC-044). A registered floor device signs each queued action; the server replays a drained action under a drain session that can act only as the person who captured it, within the server-recorded grace window. PIN enrolment is out (DLC-DEC-047).

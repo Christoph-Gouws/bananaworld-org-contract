@@ -1,3 +1,3 @@
 # Active milestone
 
-None. Last unit of work: change CR-ORG-CONTRACT-002 (change-02, signed offline capture + drain session), closed out 2026-10-11 pending PR merge. See SESSION_HANDOVER.md.
+None. Last unit of work: change CR-ORG-CONTRACT-004 (change-04, paged id-limited people read `pagePersonsByIds`, v0.10.0), closed out 2026-11-23 pending PR merge. See SESSION_HANDOVER.md.

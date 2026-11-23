@@ -12,6 +12,7 @@
  */
 
 import type { Queryable } from "../queryable";
+import { PAGE_PERSONS_SQL } from "./page-persons-sql";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -210,4 +211,77 @@ export async function listPersons(
     email: (row.email as string | null) ?? null,
     status: row.status as string,
   }));
+}
+
+// ---------------------------------------------------------------------------
+// The PAGED, ID-LIMITED people read (v0.10.0, CR-ORG-CONTRACT-004 — for the packhouse People
+// list at estate scale). The caller NAMES the ids (its own grant / membership set); the row
+// source is that list, with org.person only LEFT-joined, so the read can never list anyone the
+// caller did not name — it cannot enumerate the estate directory (same least-privilege line as
+// listPersons, EPIC-008-M007 §D). Read-only, identity only, no email (least data).
+// ---------------------------------------------------------------------------
+
+/** Hard ceiling on one page (the design kit's largest page size). */
+export const PAGE_PERSONS_MAX_LIMIT = 200;
+
+export interface PagePersonsOptions {
+  /** The caller's own ids. Malformed ids are skipped, duplicates removed. */
+  ids: readonly string[];
+  /** Optional "name contains", any case, matched literally (`%` `_` `\` are not wildcards). */
+  nameContains?: string;
+  /** Page size, clamped to [1, {@link PAGE_PERSONS_MAX_LIMIT}]. */
+  limit: number;
+  /** Whole number >= 0. When given it wins over `focusId`. */
+  offset?: number;
+  /** Used only when `offset` is not given: the page holding this id (first page if absent). */
+  focusId?: string;
+}
+
+/** One listed person. `fullName`/`status` are null when the id has no central record. */
+export interface PagedPerson {
+  personId: string;
+  fullName: string | null;
+  status: string | null;
+  authUserId: string | null;
+}
+
+export interface PersonPage {
+  rows: PagedPerson[];
+  /** Ids matching `nameContains` — never the estate. */
+  total: number;
+  /** The offset actually used (clamped to the last page). */
+  offset: number;
+}
+
+/** One page of the caller's own people, ordered `lower(coalesce(full_name, id::text)), id`.
+ *  Any status; an id with no central record is kept (null name/status) so the caller's count
+ *  never silently shrinks. One statement, always one answer row. */
+export async function pagePersonsByIds(
+  db: Queryable,
+  opts: PagePersonsOptions,
+): Promise<PersonPage> {
+  const ids = [...new Set(opts.ids.filter((id) => UUID_RE.test(id)))];
+  if (ids.length === 0) return { rows: [], total: 0, offset: 0 };
+
+  const rawLimit = Math.trunc(opts.limit);
+  const limit = Math.min(
+    Math.max(Number.isNaN(rawLimit) ? 1 : rawLimit, 1),
+    PAGE_PERSONS_MAX_LIMIT,
+  );
+  let offset: number | null = null;
+  if (opts.offset !== undefined && opts.offset !== null) {
+    const o = Math.trunc(opts.offset);
+    offset = Number.isNaN(o) || o < 0 ? 0 : Math.min(o, Number.MAX_SAFE_INTEGER);
+  }
+  const focus = opts.focusId && UUID_RE.test(opts.focusId) ? opts.focusId : null;
+  const term = opts.nameContains?.trim();
+  const pattern = term ? escapeLike(term) : null;
+
+  const { rows } = await db.query(PAGE_PERSONS_SQL, [ids, pattern, limit, offset, focus]);
+  const row = rows[0]!;
+  return {
+    rows: (row.rows as PagedPerson[] | null) ?? [],
+    total: row.total as number,
+    offset: row.offset as number,
+  };
 }
